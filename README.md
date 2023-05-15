@@ -73,3 +73,51 @@ CPU计算速度非常快，但一个接一个的计算。GPU速度稍慢，但�
 - 基于WebGL
 
 Three.js是最流行的WebGL库，它非常稳定，它提供了许多功能，文档也可圈可点(remarkable)，社区正在努力更新，它仍然足够接近原生WebGL。
+
+## 三、基础场景
+
+- 让Three.js以最简单的方式工作
+- 无 bundler、无模块、无依赖
+- 一个JavaScript和一个HTML文件
+
+### 场景(scene)
+
+它是一个容器，可以放置对象、模型，灯光等。
+
+### 对象(objects)
+
+- 原始几何图形(primitive geometries)
+- 模型(models)
+- 粒子(particles)
+- 灯光(lights)
+
+我们将创建一个网格(mesh)，结合图形与材料创建一个红色立方体。
+
+### 几何(geometry)
+
+实例化 `BoxGeometry`
+
+### 材料(material)
+
+实例化 `MeshBasicMaterial`
+
+### 网格(mesh)
+
+使用几何与材料实例化网格。
+
+### 相机(camera)
+
+- 不可见
+- 作为渲染时的视点
+- 可以有多个并在它们之间切换。
+- 不同类型
+
+我们将使用透视照相机 `PerspectiveCamera`
+
+### 渲染(renderer)
+
+- 从摄像机的角度渲染场景
+- 将结果绘制到画布中
+- canvas是一个HTML元素，你可以在其中绘制一些东西。
+- Three.js将使用WebGL在画布中绘制渲染。
+- 您可以创建它或你可以让Three.js来做。
