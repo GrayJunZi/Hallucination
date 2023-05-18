@@ -181,6 +181,7 @@ Three.js 动画就像是做定格动画(stop motion)
 `requestAnimationFrame`的目的是调用下一帧提供的函数。我们将在每个新帧上调用相同的函数。
 
 控制每帧动画
+
 ```js
 // 时间
 let time = Date.now();
@@ -228,9 +229,117 @@ tick();
 
 ### 使用动画库
 
-如果想有更多的控制，创建补间，创建时间线，等等。您可以使用像GSAP这样的动画库。
+如果想有更多的控制，创建补间，创建时间线，等等。您可以使用像 GSAP 这样的动画库。
 
 安装类库
+
 ```bash
 npm install --save gsap@3.5.1
 ```
+
+## 七、相机(Cameras)
+
+### Camera
+
+`Camera` 是一个抽象类，无法直接使用
+
+### 阵列摄像机(Array Camera)
+
+`ArrayCamera`在渲染的特定区域从多个摄像机渲染场景
+
+### 立体摄像机(Stereo Camera)
+
+立体摄像机通过两台摄像机模拟眼睛来渲染场景，以创建视差效果。与 VR 头显、红蓝眼镜或纸板等设备配合使用。
+
+### 立方摄像机(Cube Camera)
+
+`CubeCamera` 做六个渲染，每个都面向不同的方向可以为环境贴图反射贴图或阴影贴图等渲染周围环境。
+
+### 自动摄像机(Orthographic Camera)
+
+`OrthographicCamera` 无透视渲染场景。
+
+自动摄像机与透视摄像机的不同在于透视(perspective)，这意味着无论到相机的距离如何，对象都具有相同的大小。
+
+参数分别为 `left`、`right`、`top`、`bottom`、`near`、`far`。
+
+```js
+const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 100);
+```
+
+这会导致立方体看起来被压缩了(flat)，这是因为我们将一个正方形区域染成一个矩形画布我们需要使用画布比例(宽高比)。
+
+```js
+const aspectRatio = sizes.width / sizes.height;
+const camera = new THREE.OrthographicCamera(
+  -1 * aspectRatio,
+  1 * aspectRatio,
+  1,
+  -1,
+  0.1,
+  100
+);
+```
+
+### 透视摄像机(Perspective Camera)
+
+`PerspectiveCamera` 使用透视渲染场景。
+
+#### 视野(Field of view)
+
+透视摄像机的第一个参数为视野。
+
+- 垂直视角(vertical vision angle)
+- 以度(in degrees)
+- `fov`
+
+#### 纵横比(Aspect Ratio)
+
+透视摄像机的第二个参数是纵横比，渲染的宽度除以渲染的高度。
+
+#### 近与远(near and far)
+
+透视摄像机的第三个和第四个参数称为近(near)和远(far)，分别对应摄像机能看多近和多远。
+
+任何比近或比远的物体或物体的一部分都不会显示出来。
+
+不要使用像 0 这样的极值，使用 `0.0001` 和 `9999999` 来预防 `z-fighting`(深度冲突亦称闪烁)。
+
+### Control
+
+#### 设备方向控制(Device Orientation Controls)
+
+如果设备、操作系统和浏览器允许，则`DeviceOrientationControls`将自动检索设备方向并相应地旋转摄像机，它可用于创建沉浸式宇宙或 VR 体验。
+
+#### 飞行控制(Fly Controls)
+
+`FlyControls` 可以让你像在宇由飞船上一样移动摄像机你可以在所有 3 个轴上旋转，前进和后退。
+
+#### 第一人称控制(First Person Controls)
+
+`FirstPersonControls` 类似于 `FlyControls`，但是有一个固定的上轴。不像在 FPS 游戏中那样工作。
+
+#### 指针锁定控制(Pointer Lock Controls)
+
+`PointerLockControls` 使用 `pointer lock JavaScript API ` 难以使用几乎只处理指针锁定和相机旋转。
+
+#### 轨道控制(Orbit Controls)
+
+`OrbitControls` 类似于我们所做的具有更多特性的控件。
+
+增加阻尼控制(damping)
+
+```js
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
+```
+
+需要在每帧加入更新
+
+```js
+controls.update();
+```
+
+#### 轨迹球控制(Trackball Controls)
+
+`TrackballControls` 类似于没有垂直角度限制的 `OrbitControls`
