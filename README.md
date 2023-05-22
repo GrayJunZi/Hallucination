@@ -343,3 +343,21 @@ controls.update();
 #### 轨迹球控制(Trackball Controls)
 
 `TrackballControls` 类似于没有垂直角度限制的 `OrbitControls`
+
+## 八、全屏与调整大小(Fullscreen and resizing)
+
+### 处理像素比
+
+有些人可能会在边缘看到模糊的渲染和阶梯效果如果是这样的话那是因为你是在像素比大于 1 的屏幕上测试。
+
+### 全屏
+
+```js
+window.addEventListener("dblclick", () => {
+  if (!document.fullscreenElement) {
+    canvas.requestFullscreen();
+  } else {
+    document.exitFullscreen();
+  }
+});
+```
