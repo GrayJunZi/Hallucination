@@ -361,3 +361,40 @@ window.addEventListener("dblclick", () => {
   }
 });
 ```
+
+## 九、几何(Geometries)
+
+- 由顶点(三维空间中的点坐标)和面(连接这些顶点以创建表面的三角形)组成。
+- 可用于网格，也可用于粒子。
+- 可以存储比位置更多的数据(UV坐标，法线，颜色或任何我们想要的)。
+
+### 内置几何
+
+所有的几何体都继承自 `BufferGeometry`，这个类有许多内置方法例如 `translate()`、`rotate()`、`normalize()` 等。
+
+- `BoxGeometry` - 长方体几何。
+- `PlaneGeometry` - 平面几何。
+- `CircleGeometry` - 圆形几何。
+- `ConeGeometry` - 圆锥体几何。
+- `CylinderGeometry` - 圆柱体几何。
+- `RingGeometry` - 环形几何。
+- `TorusGeometry` - 圆环几何。
+- `TorusKnotGeometry` - 圆环结几何。
+- `DodecahedronGeometry` - 十二面体几何。
+- `OctahedronGeometry` - 八面体几何。
+- `TetrahedronGeometry` - 四面体几何。
+- `IcosahedronGeometry` - 二十面体几何。
+- `SphereGeometry` - 球体几何。
+- `ShapeGeometry` - 二维几何。
+- `TubeGeometry` - 管状几何。
+- `ExtrudeGeometry` - 拉伸几何。
+- `LatheGeometry` - 扫描几何。
+- `TextGeometry` - 三维文本。
+
+### 
+
+在创建几何体之前，我们需要了解如何存储缓冲区几何体数据。
+
+- 使用 `Float32Array` 存储。
+- 只能存储浮点数。
+- 固定长度。
