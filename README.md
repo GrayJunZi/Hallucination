@@ -398,3 +398,31 @@ window.addEventListener("dblclick", () => {
 - 使用 `Float32Array` 存储。
 - 只能存储浮点数。
 - 固定长度。
+
+## 十、调试UI(Debug UI)
+
+我们需要能够轻松地调整和调试它关系到开发者、设计者甚至客户这将有助于找到完美的颜色，速度，数量等。
+
+我们可以创建或使用如下库来支持调试UI。
+
+- dat.GUI
+- control-panel
+- ControlKit
+- Guify
+- Oui
+
+### dat.GUI
+
+安装 `dat.gui`
+```bash
+npm install --save lil-gui
+```
+
+我们可以在面板中添加如下元素:
+- `Range` - 对于具有最大值和最小值的数字。
+- `Color` - 用于各种格式的颜色。
+- `Text` - 对于简单的文本。
+- `Checkbox` - 对于布尔值(true 或 false)。
+- `Select` - 对于从一个值列表中选择。
+- `Button` - 用于触发函数。
+- `Folder` - 如果您有太多的元素，组织您的面板。
