@@ -366,7 +366,7 @@ window.addEventListener("dblclick", () => {
 
 - 由顶点(三维空间中的点坐标)和面(连接这些顶点以创建表面的三角形)组成。
 - 可用于网格，也可用于粒子。
-- 可以存储比位置更多的数据(UV坐标，法线，颜色或任何我们想要的)。
+- 可以存储比位置更多的数据(UV 坐标，法线，颜色或任何我们想要的)。
 
 ### 内置几何
 
@@ -391,7 +391,7 @@ window.addEventListener("dblclick", () => {
 - `LatheGeometry` - 扫描几何。
 - `TextGeometry` - 三维文本。
 
-### 
+###
 
 在创建几何体之前，我们需要了解如何存储缓冲区几何体数据。
 
@@ -399,11 +399,11 @@ window.addEventListener("dblclick", () => {
 - 只能存储浮点数。
 - 固定长度。
 
-## 十、调试UI(Debug UI)
+## 十、调试 UI(Debug UI)
 
 我们需要能够轻松地调整和调试它关系到开发者、设计者甚至客户这将有助于找到完美的颜色，速度，数量等。
 
-我们可以创建或使用如下库来支持调试UI。
+我们可以创建或使用如下库来支持调试 UI。
 
 - dat.GUI
 - control-panel
@@ -414,11 +414,13 @@ window.addEventListener("dblclick", () => {
 ### dat.GUI
 
 安装 `dat.gui`
+
 ```bash
 npm install --save lil-gui
 ```
 
 我们可以在面板中添加如下元素:
+
 - `Range` - 对于具有最大值和最小值的数字。
 - `Color` - 用于各种格式的颜色。
 - `Text` - 对于简单的文本。
@@ -426,3 +428,123 @@ npm install --save lil-gui
 - `Select` - 对于从一个值列表中选择。
 - `Button` - 用于触发函数。
 - `Folder` - 如果您有太多的元素，组织您的面板。
+
+## 十一、纹理(Textures)
+
+### 什么是纹理？
+
+纹理是覆盖几何图形表面的图像许多类型具有许多不同的效果。
+
+颜色(或反照率 Albedo)
+
+- 应用于几何图形
+
+Alpha
+
+- 灰度图像
+- 白色可见
+- 黑色不可见
+
+高度(或位移 Displacement)
+
+- 灰度图像
+- 移动顶点以创建一些浮雕
+- 需要足够的细分
+
+Normal(法线)
+
+- 添加详细信息
+- 不需要细分
+- 顶点不会移动
+- 把光线引到脸的方向
+- 比添加大量细分的高度纹理更好的性能
+
+环境遮挡(Ambient Occlusion)
+
+- 灰度图像
+- 在缝隙中添加伪阴影
+- 物理上不准确
+- 有助于创建对比度和查看细节
+
+金属性(Metalness)
+
+- 灰度图像
+- 白色是金属色
+- 黑色是非金属的
+- 主要是为了反射
+
+粗糙度(Roughness)
+
+- 灰度图像
+- 与金属性
+- 白色是粗糙的
+- 黑色光滑
+- 主要是为了消光(dissipation)
+
+### PBR 原则
+
+这些纹理(特别是金属度和粗糙度)遵循 PBR 原则
+
+- 基于物理的渲染
+- 许多技术倾向于遵循现实生活中的方向来获得逼真的效果
+- 成为逼真渲染的标准
+- 许多软件、引擎和库都在使用
+
+### 加载纹理
+
+使用 `TextureLoader` 来加载纹理。
+
+### 加载管理器
+
+我们可以使用`LoadingManager`来使事件互化如果我们想知道全局加载进度，或者在加载所有内容时得到通知，那么它是很有用的。
+
+### UV 展开(Unwrapping)
+
+纹理以不同的方式被拉伸或挤压以覆盖几何体，这就是所谓的 UV 展开这就像打开折纸或糖果包装，使其变平，每个顶点在平面上都有一个二维坐标(通常是正方形)。
+
+### 转换纹理(Transforming the texture)
+
+- repeat
+- offset
+
+### 过滤和 MIP 映射(Filtering and Mipmapping)
+
+#### 缩小过滤器(Minification Filter)
+
+当纹理像素小于渲染像素时发生，换句话说，纹理太大的表面。
+
+使用 `minFilter` 属性来改变纹理的缩小过滤器。
+
+- `THREE.NearestFilter` - 具有更好的性能和更好的帧率。
+- `THREE.LinearFilter`
+- `THREE.NearestMipmapNearestFilter`
+- `THREE.NearestMipmapLinearFilter`
+- `THREE.LinearMipmapNearestFilter`
+- `THREE.LinearMipmapLinearFilter`
+
+#### 放大过滤器(Magnification Filter)
+
+当纹理像素大于渲染像素时发生，换句话说，它覆盖的表面纹理太小。
+
+使用 `magFilter` 属性来改变纹理的放大过滤器。
+
+如果在`minFilter`上使用了`THREE.NearestFilter`，我们不需要 mip 映射，我们可以禁止 mipmaps 生成。
+
+```js
+colorTexture.generateMipmaps = false;
+```
+
+### 纹理格式和优化(Texture format and Optimisation)
+
+- weight - 纹理文件的重量。
+  - `.jpg` - 有损压缩，但通常更轻。
+  - `.png` - 无损压缩，但通常较重。
+- size - 纹理图像的大小
+- data - 数据
+  - 纹理支持透明度但在`.jpg`中我们不能有透明度，如果我们只想有一个结合颜色和 alpha 的纹理，我们最好使用`.png`文件。
+
+### 在哪里找到纹理？
+
+- [poliigon.com](https://poliigon.com)
+- [3dtextures.me](https://3dtextures.me)
+- [arroway-textures.ch](https://arroway-textures.ch)
