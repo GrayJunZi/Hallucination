@@ -597,13 +597,13 @@ MeshDepthMaterial 将简单地将几何图形涂成白色，如果它靠近 `nea
 
 `MeshStandardMaterial` 使用基于物理的渲染原则 (PBR)，像 `MeshLambertMaterial` 和 `MeshPhongMaterial` 一样，它支持光线，但有更真实的算法和更好的参数，如粗糙度和金属性。
 
-aoMap(ambient occlusion map “环境光遮蔽贴图”) 会在纹理暗的地方添加阴影。我们必须添加第二组UV，命名为 `uv2`。
+aoMap(ambient occlusion map “环境光遮蔽贴图”) 会在纹理暗的地方添加阴影。我们必须添加第二组 UV，命名为 `uv2`。
 
 `displacementMap` 将移动顶点以创建浮雕。
 
 `normalMap` 会伪造法线方向，并在曲面上添加细节，不管细分是什么。
 
-最后，我们可以使用`alphaMap`属性来控制alpha值，但别忘记加上 `transparent = true`
+最后，我们可以使用`alphaMap`属性来控制 alpha 值，但别忘记加上 `transparent = true`
 
 ### Mesh Physical Material
 
@@ -619,12 +619,62 @@ aoMap(ambient occlusion map “环境光遮蔽贴图”) 会在纹理暗的地�
 
 环境贴图是场景周围的图像，它可用于反射或折射，也可用于一般照明环境贴图支持多种材质，但我们将使用`MeshStandardMaterial`。
 
-网站 [HDRIHaven](https://hdrihaven.com) 包含数百个令人敬畏的HDRIs (High Dynamic Range Imaging, 高动态范围成像)不是立方体图。
+网站 [HDRIHaven](https://hdrihaven.com) 包含数百个令人敬畏的 HDRIs (High Dynamic Range Imaging, 高动态范围成像)不是立方体图。
 
 将 HDRIs 转换为 Cube maps 可使用在线工具 [HDRI-to-CubeMap](https://matheowis.github.io/HDRI-to-CubeMap/)
 
-### 添加调试UI
+### 添加调试 UI
 
 ```bash
 npm install --save lil-gui
+```
+
+## 十三、3D 文本(Text)
+
+我们将使用 `TextBufferGeometry` 类，但我们需要一种特殊的字体格式，称为 `typeface`。
+
+### 如何得到 typeface 字体？
+
+我们可以使用在线字体转换工具 [facetype.js](https://gero3.github.io/facetype.js)
+
+我们也可以使用 Three.js 提供的字体 `/node_modules/three/examples/fonts/`
+
+### 字体加载器
+
+使用 `FontLoader` 来加载字体。
+
+```js
+import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
+```
+
+### 文本图形
+
+使用 `TextGeometry` 来创建文本图形
+
+```js
+import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
+```
+
+### 居中文本
+
+默认情况下，Three.js 使用球形边界。计算盒子边界使用 `computeBoundingBox()`。
+
+```js
+textGeometry.computeBoundingBox();
+```
+
+使用 `translate()` 方法改变位置。
+
+```js
+textGeometry.translate(
+  -(textGeometry.boundingBox.max.x - bevelSize) * 0.5,
+  -(textGeometry.boundingBox.max.y - bevelSize) * 0.5,
+  -(textGeometry.boundingBox.max.z - bevelThickness) * 0.5
+);
+```
+
+亦可以使用 `center()` 方法直接将文本进行居中。
+
+```js
+textGeometry.center();
 ```
