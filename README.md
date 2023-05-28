@@ -405,15 +405,15 @@ window.addEventListener("dblclick", () => {
 
 我们可以创建或使用如下库来支持调试 UI。
 
-- dat.GUI
+- lil.GUI
 - control-panel
 - ControlKit
 - Guify
 - Oui
 
-### dat.GUI
+### lil.GUI
 
-安装 `dat.gui`
+安装 `lil.gui`
 
 ```bash
 npm install --save lil-gui
@@ -548,3 +548,83 @@ colorTexture.generateMipmaps = false;
 - [poliigon.com](https://poliigon.com)
 - [3dtextures.me](https://3dtextures.me)
 - [arroway-textures.ch](https://arroway-textures.ch)
+
+## 十二、材质(Materials)
+
+材质用于在几何图形的每个可见像素上添加颜色。我们不需要编写着色器，我们可以使用内置的材料。
+
+### Mesh Basic Material
+
+#### alphaMap
+
+`alphaMap` 使用纹理控制透明度
+
+#### side
+
+`side` 可让您决定面的哪一侧是可见的。
+
+- THREE.FrontSide
+- THREE.BackSide
+- THREE.DoubleSide
+
+### Mesh Normal Material
+
+法线是包含面外侧方向的信息
+
+### Mesh Matcap Material
+
+`MeshMatcapMaterial` 将通过使用法线作为参考来显示颜色，以在看起来像球体的纹理上选择正确的颜色。
+
+寻找更多 [matcaps](https://github.com/nidorx/matcaps)
+
+### Mesh Depth Material
+
+MeshDepthMaterial 将简单地将几何图形涂成白色，如果它靠近 `near` ，则用黑色表示，如果它接近摄像机的`far`。
+
+### Mesh Lambert Material
+
+`MeshLambertMaterial` 具有与光相关的新特性。
+
+### Mesh Phong Material
+
+我们可以用 `shininess` 来控制光的反射，用 `specular` 来控制反射的颜色。
+
+### Mesh Toon Material
+
+`MeshToonMaterial` 与 `MeshLambertMaterial` 类似 但是卡通化的。
+
+### Mesh Standard Material
+
+`MeshStandardMaterial` 使用基于物理的渲染原则 (PBR)，像 `MeshLambertMaterial` 和 `MeshPhongMaterial` 一样，它支持光线，但有更真实的算法和更好的参数，如粗糙度和金属性。
+
+aoMap(ambient occlusion map “环境光遮蔽贴图”) 会在纹理暗的地方添加阴影。我们必须添加第二组UV，命名为 `uv2`。
+
+`displacementMap` 将移动顶点以创建浮雕。
+
+`normalMap` 会伪造法线方向，并在曲面上添加细节，不管细分是什么。
+
+最后，我们可以使用`alphaMap`属性来控制alpha值，但别忘记加上 `transparent = true`
+
+### Mesh Physical Material
+
+`MeshPhysicalMaterial` 与 `MeshStandardMaterial` 相同，但具有闪烁涂层效果的支持。
+
+### Points Material
+
+### Shader Material 和 Raw Shader Material
+
+`ShaderMaterial` 和 `RawShaderMaterial` 都可以用来创建您自己的材质。
+
+### 环境图(Environment Map)
+
+环境贴图是场景周围的图像，它可用于反射或折射，也可用于一般照明环境贴图支持多种材质，但我们将使用`MeshStandardMaterial`。
+
+网站 [HDRIHaven](https://hdrihaven.com) 包含数百个令人敬畏的HDRIs (High Dynamic Range Imaging, 高动态范围成像)不是立方体图。
+
+将 HDRIs 转换为 Cube maps 可使用在线工具 [HDRI-to-CubeMap](https://matheowis.github.io/HDRI-to-CubeMap/)
+
+### 添加调试UI
+
+```bash
+npm install --save lil-gui
+```
