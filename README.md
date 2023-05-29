@@ -678,3 +678,21 @@ textGeometry.translate(
 ```js
 textGeometry.center();
 ```
+
+## 十四、上线(Go live)
+
+### 传统构建方式
+
+"传统"托管解决方案，如OVH、1and1或Gandhi，您必须使用FTP客户端手动上传文件。
+
+#### 构建项目
+
+- 运行 `npm run build` 命令构建项目。
+- 上传 `/dist/` 文件夹下的所有文件。
+
+
+### Netlify
+
+- 持续集成(Continuous Integration), 自动测试、自动部署等。
+- 开发者友好
+- 易于设置
