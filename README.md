@@ -683,16 +683,166 @@ textGeometry.center();
 
 ### 传统构建方式
 
-"传统"托管解决方案，如OVH、1and1或Gandhi，您必须使用FTP客户端手动上传文件。
+"传统"托管解决方案，如 OVH、1and1 或 Gandhi，您必须使用 FTP 客户端手动上传文件。
 
 #### 构建项目
 
 - 运行 `npm run build` 命令构建项目。
 - 上传 `/dist/` 文件夹下的所有文件。
 
-
 ### Netlify
 
 - 持续集成(Continuous Integration), 自动测试、自动部署等。
 - 开发者友好
 - 易于设置
+
+## 十五、灯光(Lights)
+
+添加光源与添加网格一样简单我们用正确的类实例化，并将其添加到场景中。
+
+### 环境光源(Ambient Light)
+
+第一个参数是颜色(color)，第二个参数是强度(intensity)。
+
+```js
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+scene.add(ambientLight);
+```
+
+### 定向光源(Directional Light)
+
+第一个参数是颜色(color)，第二个参数是强度(intensity)。
+
+```js
+const directionalLight = new THREE.DirectionalLight(0x00ffcc, 0.3);
+scene.add(directionalLight);
+```
+
+修改光源方向。
+
+第一个参数是 x 轴，第二个参数是 y 轴，第三个参数是 z 轴。
+
+```js
+directionalLight.position.set(1, 0.25, 0);
+```
+
+### 半球光源(Hemisphere Light)
+
+半球光类似于环境光，但从天空发出的颜色与从地面发出的颜色不同。
+
+第一个参数是 天空颜色(skyColor)，第二个参数是 地面颜色(groundColor)，第三个参数是 强度(intensity)。
+
+```js
+const hemisphereLight = new THREE.HemisphereLight(0xff0000, 0x0000ff, 0.3);
+scene.add(hemisphereLight);
+```
+
+### 点光源(Point Light)
+
+第一个参数是颜色(color)，第二个参数是强度(intensity)。
+
+```js
+const pointLight = new THREE.PointLight(0xff9000, 0.5);
+scene.add(pointLight);
+```
+
+移动光源位置。
+
+```js
+pointLight.position.set(1, -0.5, 1);
+```
+
+默认情况下，光线强度不会减弱，我们可以控制褪色的距离，以及它随着距离和衰减而褪色的速度。
+
+第三个参数是 距离(distance)，第四个参数是 衰退(decay)。
+
+```js
+const pointLight = new THREE.PointLight(0xff9000, 0.5, 10, 2);
+```
+
+### 矩形区域光源(Rect Area Light)
+
+RectAreaLight 的工作原理就像你在拍摄组中看到的大矩形灯一样。它是定向光和漫射光的混合物。
+
+第一个参数是颜色(color)，第二个参数是强度(intensity)，第三个参数是宽度(Width)，第四个参数是高度(Height)。
+
+```js
+const rectAreaLight = new THREE.RectAreaLight(0x4e00ff, 2, 1, 1);
+scene.add(rectAreaLight);
+```
+
+修改光源位置。
+
+```js
+rectAreaLight.position.set(-1.5, 0, 1.5);
+```
+
+使用查看方法
+
+```js
+rectAreaLight.lookAt(new THREE.Vector3());
+```
+
+> RectAreaLight 只能在 `MeshStandardMaterial` 和 `MeshPhysicalMaterial` 中工作。
+
+### 聚光灯(Spot Light)
+
+`SpotLight` 就像手电筒，它是一个光锥，从一个点开始指向一个方向。
+
+第一个参数是 颜色(color)，第二个参数是强度(intensity)，第三个参数是距离(distance)，第四个参数是 角度(angle)，第五个参数是 半影(penumbra)，第六个参数是 衰退(decay)。
+
+```js
+const spotLight = new THREE.SpotLight(
+  0x78ff00,
+  0.5,
+  10,
+  Math.PI * 0.1,
+  0.25,
+  1
+);
+scene.add(spotLight);
+```
+
+移动光源位置。
+
+```js
+spotLight.position.set(0, 2, 3);
+```
+
+旋转光源。
+
+```js
+spotLight.target.position.x = -0.75;
+```
+
+### 性能(Performance)
+
+#### 最小成本(Minimal Cost)
+
+- Ambient Light
+- Hemisphere Light
+
+#### 适中成本 (Moderate Cost)
+
+- Directional Light
+- Point Light
+
+#### 昂贵成本 (High Cost)
+
+- RectAreaLight
+- SpotLight
+
+### 烘培(Baking)
+
+光源成本比较高，当需要大量的灯光和光线时，可以使用烘培。
+我们的想法是把光线烤进纹理里，这可以在一个3D软件中完成，缺点是我们不能再移动光了我们必须加载巨大的纹理。
+
+### Helper
+
+为了帮助我们定位灯光，我们可以使用Helper。
+
+- `HemisphereLightHelper`
+- `DirectionalLightHelper`
+- `PointLightHelper`
+- `RectAreaLightHelper`
+- `SpotLightHelper`
