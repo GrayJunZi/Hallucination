@@ -835,14 +835,176 @@ spotLight.target.position.x = -0.75;
 ### 烘培(Baking)
 
 光源成本比较高，当需要大量的灯光和光线时，可以使用烘培。
-我们的想法是把光线烤进纹理里，这可以在一个3D软件中完成，缺点是我们不能再移动光了我们必须加载巨大的纹理。
+我们的想法是把光线烤进纹理里，这可以在一个 3D 软件中完成，缺点是我们不能再移动光了我们必须加载巨大的纹理。
 
 ### Helper
 
-为了帮助我们定位灯光，我们可以使用Helper。
+为了帮助我们定位灯光，我们可以使用 Helper。
 
 - `HemisphereLightHelper`
 - `DirectionalLightHelper`
 - `PointLightHelper`
 - `RectAreaLightHelper`
 - `SpotLightHelper`
+
+## 十六、阴影(Shadows)
+
+阴影一直是实时 3D 渲染的一个挑战，开发人员必须找到技巧，以合理的帧速率显示真实的阴影。
+
+three.js 有一个内置的解决方案，它并不完美但很方便。
+
+### 阴影是如何工作的？
+
+- 当你做一个渲染时，Three.js 会为每一个支持阴影的光做一个渲染。
+- 这些渲染将模拟光线看到的东西，就像它是一个摄像机一样。
+- 在这些灯光渲染过程中，`MeshDepthMaterial` 将替换所有的网格材质。
+- 灯光渲染被存储为纹理，我们称之为阴影贴图(Shadow maps)。
+- 然后，它们被用于每个应该接收阴影的材料，并投影到几何体上。
+
+### 添加阴影
+
+启用阴影渲染
+
+```js
+renderer.shadowMap.enabled = true;
+```
+
+遍历每个对象，并决定它是否可以使用 `castShadow` 投射阴影，是否可以使用 `receiveshadow` 接收阴影。
+
+```js
+sphere.castShadow = true;
+plane.receiveShadow = true;
+```
+
+只有以下类型的灯光支持阴影。
+
+- PointLight
+- DirectionalLight
+- SpotLight
+
+```js
+directionalLight.castShadow = true;
+```
+
+### 阴影贴图优化
+
+#### 渲染大小
+
+默认情况下，阴影贴图大小为 `512x512` 我们可以改进它，但对 mipmapping 保持 2 的幂。
+
+```js
+directionalLight.shadow.mapSize.width = 1024;
+directionalLight.shadow.mapSize.height = 1024;
+```
+
+#### 近与远(Near and Far)
+
+```js
+directionalLight.shadow.camera.near = 1;
+directionalLight.shadow.camera.far = 6;
+```
+
+为了帮助我们进行调试，我们可以使用 `CameraHelper` 和位于 `directionalLight.shadow.camera` 中用于阴影贴图的相机。
+
+```js
+const directionalLightCamerHelper = new THREE.CameraHelper(
+  directionalLight.shadow.camera
+);
+scene.add(directionalLightCamerHelper);
+```
+
+#### 振幅(Amplitude)
+
+我们可以控制摄像机在每一面的距离，分别用上、右、下和左。
+
+```js
+directionalLight.shadow.camera.top = 2;
+directionalLight.shadow.camera.right = 2;
+directionalLight.shadow.camera.bottom = -2;
+directionalLight.shadow.camera.left = -2;
+```
+
+值越小，阴影越精确。如果太小，阴影将被裁剪。
+
+我们可以隐藏 `camera helper`
+
+```js
+directionalLightCamerHelper.visible = false;
+```
+
+#### 模糊(blur)
+
+```js
+directionalLight.shadow.radius = 10;
+```
+
+#### 阴影贴图算法(Shadow map Algorithm)
+
+不同类型的算法可应用于阴影贴图。
+
+- `THREE.BasicShadowMap` - 性能很好但质量很差。
+- `THREE.PCFShadowMap` - 性能较低但边缘更平滑(默认)。
+- `THREE.PCFSoftShadowMap` - 性能更差但边缘更柔和。
+- `THREE.VSMShadowMap` - 更少的性能，更多的约束，可以有意想不到的结果。
+
+```js
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+```
+
+> 启用 `THREE.PCFSoftShadowMap` 时模糊将会失效。
+
+### 聚光灯(SpotLight)
+
+修改阴影贴图大小。
+
+```js
+spotLight.shadow.mapSize.width = 1024;
+spotLight.shadow.mapSize.height = 1024;
+```
+
+因为我们使用的是 SpotLight，Three.js 使用的是透视摄像头我们必须改变 `fov` 特性来适应振幅。
+
+```js
+spotLight.shadow.camera.fov = 30;
+```
+
+### 点光源(PointLight)
+
+修改贴图大小
+
+```js
+pointLight.shadow.mapSize.width = 1024;
+pointLight.shadow.mapSize.height = 1024;
+```
+
+修改远近
+
+```js
+pointLight.shadow.camera.near = 0.1;
+pointLight.shadow.camera.far = 5;
+```
+
+### 烘焙阴影(Baking Shadows)
+
+停用渲染器中的所有阴影。
+
+```js
+renderer.shadowMap.enabled = false;
+```
+
+### 烘焙阴影替代方案(Baking Shadows Alternative)
+
+自定义阴影
+```js
+const sphereShadow = new THREE.Mesh(
+  new THREE.PlaneGeometry(1.5, 1.5),
+  new THREE.MeshBasicMaterial({
+    color: 0x000000,
+    transparent: true,
+    alphaMap: simpleShadow,
+  })
+);
+sphereShadow.rotation.x = -Math.PI * 0.5;
+sphereShadow.position.y = plane.position.y + 0.01;
+scene.add(sphereShadow);
+```
