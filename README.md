@@ -1008,3 +1008,8 @@ sphereShadow.rotation.x = -Math.PI * 0.5;
 sphereShadow.position.y = plane.position.y + 0.01;
 scene.add(sphereShadow);
 ```
+
+## 十七、鬼屋(Haunted House)
+
+### 房子
+
