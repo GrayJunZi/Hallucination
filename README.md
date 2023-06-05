@@ -1047,28 +1047,47 @@ particlesMaterial.alphaTest = 0.001;
 
 ### 使用 Depth Test
 
-在绘制时，WebGL会测试正在绘制的内容是否比已经绘制的内容更接近。
+在绘制时，WebGL 会测试正在绘制的内容是否比已经绘制的内容更接近。
 
-这称为深度测试，可以用alphaTest停用。
+这称为深度测试，可以用 alphaTest 停用。
 
 如果场景中有其他对象或粒子具有不同的颜色，停用深度测试可能会产生错误，在场景中添加一个多维数据集，可以看到。
 
 ### 使用 Depth Write
 
-所绘制的深度存储在我们称之为深度缓冲区的，我们可以用depthTest命令告诉WebGL不要将粒子写入深度缓冲区，而不是不测试粒子是否比深度缓冲区中的粒子更近。
+所绘制的深度存储在我们称之为深度缓冲区的，我们可以用 depthTest 命令告诉 WebGL 不要将粒子写入深度缓冲区，而不是不测试粒子是否比深度缓冲区中的粒子更近。
 
 ### 使用 Blending
 
-WebGL当前将像素一个一个地画在另一个之上通过混合属性，我们可以告诉WebGL将像素的颜色添加到已经绘制的像素的颜色中将`Blending`属性更改为`THREE.AdditiveBlending`
+WebGL 当前将像素一个一个地画在另一个之上通过混合属性，我们可以告诉 WebGL 将像素的颜色添加到已经绘制的像素的颜色中将`Blending`属性更改为`THREE.AdditiveBlending`
 
 ### 不同颜色
 
-我们可以为每个粒子设置不同的颜色添加具有3个值 (红色、绿色和蓝色) 的颜色属性。
+我们可以为每个粒子设置不同的颜色添加具有 3 个值 (红色、绿色和蓝色) 的颜色属性。
 
 ### 动画
 
-类继承自object3D，因此我们可以移动、旋转和缩放，在tick函数中旋转粒子。
+类继承自 object3D，因此我们可以移动、旋转和缩放，在 tick 函数中旋转粒子。
 
 ### 使用自定义着色器(Shader)
 
 动画粒子的最好方法是创建我们自己的着色器。
+
+## 十九、银河生成器(Galaxy Generator)
+
+### Geometry
+
+### Material
+
+### Points
+
+### Tweaks
+
+### 创建漩涡星系(Spirals)
+
+- Radius
+- Branches
+- Spin
+- Randomness
+- Randomness Power
+- Colors
