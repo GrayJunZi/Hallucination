@@ -995,6 +995,7 @@ renderer.shadowMap.enabled = false;
 ### 烘焙阴影替代方案(Baking Shadows Alternative)
 
 自定义阴影
+
 ```js
 const sphereShadow = new THREE.Mesh(
   new THREE.PlaneGeometry(1.5, 1.5),
@@ -1011,5 +1012,63 @@ scene.add(sphereShadow);
 
 ## 十七、鬼屋(Haunted House)
 
-### 房子
+## 十八、粒子(Particles)
 
+粒子可以用来制造恒星、烟雾、雨、尘埃、火焰等。
+你可以用一个合理的帧速率拥有数千个粒子每个粒子由一个平面(两个三角形)组成，总是面对着摄像机。
+
+创建粒子就像创建网格
+
+- 几何图形(`BufferGeometry`)
+- 材料(`PointsMaterial`)
+- `Points` 实例 (而不是网格)
+
+### 实例化 SphereGeometry
+
+几何图形的每个顶点都将成为一个粒子。
+
+### 实例化 PointsMaterial
+
+更改 `size` 属性以控制所有粒子的大小，并将 `sizeAttenuation` 更改为“指定远处粒子是否应小于关闭粒子。
+
+### 自定义 Geometry
+
+创建一个 `BufferGeometry` 并添加一个 `position` 属性，而不是`SphereGeometry`。
+
+### 颜色、贴图和法线贴图
+
+### 使用 Alpha Test
+
+alphaTest 是一个介于 0 和 1 之间的值，它使 WebGL 能够知道何时不根据像素的透明度来渲染像素，默认情况下，该值为 0，表示无论如何都会呈现像素。
+
+```js
+particlesMaterial.alphaTest = 0.001;
+```
+
+### 使用 Depth Test
+
+在绘制时，WebGL会测试正在绘制的内容是否比已经绘制的内容更接近。
+
+这称为深度测试，可以用alphaTest停用。
+
+如果场景中有其他对象或粒子具有不同的颜色，停用深度测试可能会产生错误，在场景中添加一个多维数据集，可以看到。
+
+### 使用 Depth Write
+
+所绘制的深度存储在我们称之为深度缓冲区的，我们可以用depthTest命令告诉WebGL不要将粒子写入深度缓冲区，而不是不测试粒子是否比深度缓冲区中的粒子更近。
+
+### 使用 Blending
+
+WebGL当前将像素一个一个地画在另一个之上通过混合属性，我们可以告诉WebGL将像素的颜色添加到已经绘制的像素的颜色中将`Blending`属性更改为`THREE.AdditiveBlending`
+
+### 不同颜色
+
+我们可以为每个粒子设置不同的颜色添加具有3个值 (红色、绿色和蓝色) 的颜色属性。
+
+### 动画
+
+类继承自object3D，因此我们可以移动、旋转和缩放，在tick函数中旋转粒子。
+
+### 使用自定义着色器(Shader)
+
+动画粒子的最好方法是创建我们自己的着色器。
