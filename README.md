@@ -1091,3 +1091,69 @@ WebGL 当前将像素一个一个地画在另一个之上通过混合属性，�
 - Randomness
 - Randomness Power
 - Colors
+
+## 二十、基于滚动的动画(Scroll Based Animation)
+
+- 了解如何使用 Three.js 作为经典 HTML 页面的背景。
+- 使相机平移以跟随滚动。
+- 发现一些技巧，使其更具沉浸感基于光标位置添加视差动画。
+- 当到达相应的部分时触发一些动画。
+
+### HTML 滚动
+
+### 固定弹性滚动(Elastic Scroll)
+
+您可能会注意到，如果您滚动得太远，当页面超过限制时，您会得到一种弹性动画，这是一个很酷的功能，但页面的背面是白色的，不符合我们的经验。
+
+### 永远旋转(Permanent Rotation)
+
+添加旋转动画
+
+```js
+const tick = () => {
+  const elapsedTime = clock.getElapsedTime();
+
+  // meshes 动画
+  for (const mesh of sectionMeshes) {
+    mesh.rotation.x = elapsedTime * 0.1;
+    mesh.rotation.y = elapsedTime * 0.12;
+  }
+};
+```
+
+### 添加滚动动画
+
+获取当前滚动的位置
+
+```js
+let scrollY = window.scrollY;
+window.addEventListener("scroll", () => {
+  scrollY = window.scrollY;
+});
+```
+
+调整相机位置
+
+```js
+const tick = () => {
+  const elapsedTime = clock.getElapsedTime();
+
+  // 相机动画
+  // 当向下滚动时，ScrollY是正的，但相机应该在y轴上向下滚动。
+  camera.position.y = -scrollY;
+
+};
+```
+
+`scrollY` 包含已滚动的像素数量，如果我们滚动 1000 像素，相机将下降 1000 个单位的场景。
+
+### 视差(Parallax)
+
+视差是通过不同的观察点看到一个物体的动作，这是我们的眼睛自然完成的这就是我们如何感受事物的深度。
+
+### 触发旋转(Triggered Rotations)
+
+安装 gsap
+```bash
+npm install gsap@3.5.1
+```
