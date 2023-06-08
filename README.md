@@ -1141,7 +1141,6 @@ const tick = () => {
   // 相机动画
   // 当向下滚动时，ScrollY是正的，但相机应该在y轴上向下滚动。
   camera.position.y = -scrollY;
-
 };
 ```
 
@@ -1154,6 +1153,72 @@ const tick = () => {
 ### 触发旋转(Triggered Rotations)
 
 安装 gsap
+
 ```bash
 npm install gsap@3.5.1
+```
+
+## 二十一、物理(Physics)
+
+- 我们创造了一个物理世界
+- 我们创建一个 Three.js 3D 世界
+- 当我们在 Three.js 世界中添加一个对象时，我们也在物理世界中添加一个
+- 在每一帧中，我们让物理世界更新自己，并相应地更新 Three.js 世界
+
+3D 物理库
+
+- Ammo.js
+- Cannon.js
+- Oimo.js
+
+2D 物理库
+
+- Matter.js
+- P2.js
+- Planck.js
+- Box2D.js
+
+### 安装 cannon
+
+```bash
+npm install --save cannon
+```
+
+### 施加力(Apply Forces)
+
+我们可以用来对物体施加压力有以下四种方法。
+
+- `applyForce` - 应用来自空间特定点的力 (不一定在物体表面)比如风，多米诺骨牌上的一个小推力，或者愤怒的小鸟上的一个强大的力。
+- `applyImpulse` - 像 `applyForce` 但不是增加力而是增加速度
+- `applyLocalForce` - 与 `applyForce` 相同，但坐标是`Body`的局部坐标 (0，0，0 是`Body`的中心)
+- `applyLocalImpulse` - 与 applylmpulse 相同，但坐标是`Body`的本地坐标。
+
+### 性能(Performance)
+
+- BroadPhase - 碰撞检测
+
+我们称这一步为宽相位，我们可以使用不同的宽相位来获得更好的性能。
+- `NaiveBroadphase` - 测试每一个`Bodies`对抗其他`Bodies`。
+- `GridBroadphase` - quadrilles，只测试同一网格盒或相邻网格盒中的其他`Bodies`
+- `SAPBroadphase` (扫掠和修剪, Sweep And Prune) - 在多次步骤中测试任意轴上的物体。
+
+> 默认的宽相位是`NaiveBroadphase`，建议切换到`SAPBroadphase`，使用它最终会产生错误，如果`Bodies`移动非常快。
+
+### 约束(Constraint)
+
+约束启用两个主体之间的约束。
+- `HingeConstraint` - 像一个门较链。
+- `DistanceConstraint` - 迫使物体彼此之间保持一定距离。
+- `LockConstraint` - 合并`Bodies`就像是一个整体。
+- `PointToPointConstraint` - 将主体粘贴到特定点。
+
+### Workers
+
+做物理的计算机部件是CPU目前，所有事情都是由CPU中的同一个线程完成的，该线程可能会很快过载，解决的办法是使用`Workers`
+
+### 更新Cannon.js 为 Cannon-es
+
+```bash
+npm uninstall --save cannon
+npm install --save cannon-es
 ```
