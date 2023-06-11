@@ -1198,6 +1198,7 @@ npm install --save cannon
 - BroadPhase - 碰撞检测
 
 我们称这一步为宽相位，我们可以使用不同的宽相位来获得更好的性能。
+
 - `NaiveBroadphase` - 测试每一个`Bodies`对抗其他`Bodies`。
 - `GridBroadphase` - quadrilles，只测试同一网格盒或相邻网格盒中的其他`Bodies`
 - `SAPBroadphase` (扫掠和修剪, Sweep And Prune) - 在多次步骤中测试任意轴上的物体。
@@ -1207,6 +1208,7 @@ npm install --save cannon
 ### 约束(Constraint)
 
 约束启用两个主体之间的约束。
+
 - `HingeConstraint` - 像一个门较链。
 - `DistanceConstraint` - 迫使物体彼此之间保持一定距离。
 - `LockConstraint` - 合并`Bodies`就像是一个整体。
@@ -1214,11 +1216,154 @@ npm install --save cannon
 
 ### Workers
 
-做物理的计算机部件是CPU目前，所有事情都是由CPU中的同一个线程完成的，该线程可能会很快过载，解决的办法是使用`Workers`
+做物理的计算机部件是 CPU 目前，所有事情都是由 CPU 中的同一个线程完成的，该线程可能会很快过载，解决的办法是使用`Workers`
 
-### 更新Cannon.js 为 Cannon-es
+### 更新 Cannon.js 为 Cannon-es
 
 ```bash
 npm uninstall --save cannon
 npm install --save cannon-es
 ```
+
+## 二十二、导入模型(Imported models)
+
+### 格式(Formats)
+
+多种 3D 模型格式，每种格式对应一个问题
+
+- 数据
+- 重量
+- 压缩
+- 兼容性
+- 版权
+
+不同标准
+
+- 专用于一个软件
+- 非常轻，但可能缺乏具体的数据·几乎所有的数据，但都是沉重的
+- 开放源代码
+- 不开放源代码
+- 二进制的
+- ASCII
+
+流行的格式
+
+- OBJ
+- FBX
+- STL
+- PLY
+- COLLADA
+- 3DS
+- GLTF
+
+GLTF 这种格式正在成为一种标准格式，应该可以满足我们的大部分需求。
+
+- GL Transmission Format
+- 由 Khronos 集团 (OpenGL,WebGL,Vulkan,Collada 和许多成员，如 AMD / ATI, 英伟达，苹果，id Software,Google，任天堂等)
+- 支持不同的数据集，如几何，材质，摄像机，灯光，场景图，动画，骨架，变形等。
+- 各种格式，如 json，二进制，嵌入纹理(embed textures)。
+- 成为实时和大多数 3D 软件、游戏引擎和库支持的标准。
+
+### 找一个模型
+
+GLTF 团队提供各种模型进行测试
+https://github.com/KhronosGroup/glTF-Sample-Models
+
+### GLTF 格式
+
+GLTF 文件可以有不同的格式
+打开 `/static/models/Duck/` 查找 4 种主要格式
+
+- glTF
+- glTF-Binary
+- glTF-Draco
+- glTF-Embedded
+
+- 默认格式
+- 多个文件
+- `Duck.gltf` 是一个 JSON，包含相机，灯光，场景，材质，对象转换，但没有几何和纹理。
+- `Duck0.bin` 是一个二进制文件，通常包含几何数据 (顶点位置，UV 坐标，法线，颜色等)。
+- `DuckCM.png` 是纹理。
+
+我们加载 `Duck.gltf` 文件，其他文件应该会自动加载。
+
+#### GLTF 二进制
+
+- 只有一个文件
+- 包含了我们讨论过的所有数据
+- 二进制的
+- 通常较轻
+- 因为只有一个文件更容易加载，
+- 很难更改数据
+
+#### GLTF Draco
+
+- 与 glTF 默认格式类似，但使用 Draco 算法压缩缓冲区数据
+- 轻得多
+
+#### GLTF Embedded
+
+- 一个像 glTF-Binary 格式的文件
+- JSON
+- 沉重的
+
+#### 如何选择呢？
+
+问题是你想怎么处理这些资产如果你想改变文件，你最好使用 glTF 默认值加载多个文件可以更快如果有一个文件对你更好，你最好去使用 glTF-Binary
+
+无论如何，您必须决定是否要使用 Draco 压缩
+
+### 在 Three.js 中加载模型
+
+我们需要使用 GLTFLoader 我们需要从示例中导入
+
+```js
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+```
+
+使用`load(...)`的方法
+
+- 文件的路径
+- 成功回调函数
+- 进度回调函数
+- 错误回调函数
+
+- `Mesh`应该是我们的鸭子
+- 我们不需要`PerspectiveCamera`
+- 摄像机和鸭子在`Object3D`中
+- `Object3D`的比例设置为一个小值
+
+我们有多种方法将鸭子添加到场景中
+
+- 在我们的场景中添加整个`scene`。
+- 将`scene`中的`children`添加到我们的场景中，而忽略透视相机。
+- 在添加到场景之前过滤子元素。
+- 只添加`Mesh`，最终得到一只比例、位置和旋转错误的鸭子。
+- 在 3D 软件中打开文件，清理后再导出
+
+将 Object3D 添加到场景中，忽略未使用的 PerspectiveCamera
+
+```js
+gltfLoader.load("/models/Duck/glTF/Duck.gltf", (gltf) => {
+  scene.add(gltf.scene.children[0]);
+});
+```
+
+- Draco 版本可以比默认版本轻得多
+- 压缩应用于缓冲区数据(通常是几何图形)
+- 德拉科不是 glTF 的专属但与此同时，它们也开始流行起来，而且在 glTF 出口商中实施得更快。
+- Google 在开放源码 apache 许可下开发了 algorithm 算法。
+
+### 动画
+
+加载的 gltf 对象包含由多个`Animationclip`组成的 animations 属性
+
+我们需要创建一个动画混合器 `AnimationMixer` 就像与一个对象关联的播放器，该对象可以包含一个或多个 `Animationclips`
+
+### Three.js Editor
+
+https://threejs.org/editor/
+
+- 就像一个小小的在线 3D 软件
+- 测试模型的好方法
+- 仅适用于由一个文件组成的模型
