@@ -1582,3 +1582,35 @@ Properties 显示渲染属性、环境属性和活动对象属性 (根据活动�
 - 选择 `None` 作为 `Unit System`
 
 #### Bottom Bun
+
+## 二十五、真实渲染(Realistic Render)
+
+### 添加环境图(Environment Map)
+
+照明将由环境地图来处理
+环境地图就像一张周围的照片，它可以是一张 360 度的照片，也可以是组成一个立方体的 6 张照片
+我们将使用环境地图作为背景，并照亮我们的模型。
+
+### 色调映射(Tone Mapping )
+
+The tone 映射旨在将高动态范围 (HDR) 值转换为低动态范围(LDR)值
+HDR 远不止下面的解释，但你可以看到，像图像的颜色值可以超过 1
+我们的素材不是 HDR，但色调映射效果可以有一个逼真的结果，就像相机调整得不好一样。
+
+- THREE.NoToneMapping (默认)
+- THREE.LinearToneMapping
+- THREE.ReinhardToneMapping
+- THREE.CineonToneMapping
+- THREE.ACESFilmicToneMapping
+
+### 反走样(Antialiasing)
+
+一个简单的解决方案是将染的分辨率提高到双倍，每个像素的颜色将自动从呈现的 4 个像素中平均。
+这就是所谓的超级采样 super sampling(SSAA) 或全屏采样 fullscreen sampling (FSAA)，它是一种简单而高效的采样方式但性能较差。
+
+另一个名为多重采样 multi sampling (MSAA) 的解决方案也将呈现每个像素的多个值 (通常为 0 就像超级采样一样，但只在几何边缘。
+像素的值，然后取平均值，得到最终的像素值
+
+### 阴影(Shadow)
+
+我们可以调整光影的偏置和`normalBias`来修正它，倾斜通常有助于平坦的表面，这是我们的情况 normalBias 通常有助于圆形表面，增加它直到暗疮几乎看不出来。
