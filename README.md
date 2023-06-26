@@ -1632,3 +1632,366 @@ HDR 远不止下面的解释，但你可以看到，像图像的颜色值可以�
 兼容性(compatibility)，大多数浏览器都只是模块导入。
 
 ### 类(Classes)
+
+## 二十七、着色器(Shaders)
+
+### 什么是 Shader？
+
+- WebGL 的一个主要组成部分之一。
+- 如果做原生 WebGL，必须先学习。
+- 用`GLSL`编写的程序。
+- 发送到 GPU
+- 定位几何体的每个顶点。
+- 将几何图形每个可见像素着色。
+
+我们向着色器发送大量数据。
+
+- 顶点坐标(Vertices coordinates)
+- 网格变换(Mesh Transformation)
+- 摄像机的相关信息
+- 颜色(Colors)
+- 纹理(Textures)
+- 灯光(Lights)
+- 灯雾(Fog)
+
+#### 顶点着色器(Vertex Shader)
+
+- `Vertex Shader` 在渲染中定位顶点。
+- `fragment shader` 片段着色器将该几何体的每个可见片段 (或像素)着色。
+- `fragment shader` 片段着色器在顶点着色器之后执行。
+- 每个顶点之间变化的信息(比如它们的位置)被称为属性，只能在`vertex shader`中使用。
+- 在顶点(或片段)之间不改变的信息被称为均匀(uniforms)，可以在`vertex shader`和`fragment shader`中使用。
+- 我们可以将数据从`vertex shader`发送到`fragment shader`使用`varying`。
+- 在顶点(vertices)之间插值变化(varyings)值。
+
+### 为什么要编写我们自己的 Shaders？
+
+- Three.js 材质有限制。
+- 我们的着色器可以非常简单和高性能。
+- 我们可以添加自定义后处理(post-processing)。
+
+### 使用 RawShaderMaterial 创建第一个 Shader
+
+我们可以使用 `ShaderMaterial` 和 `RawShaderMaterial` 两种方式创建自己的着色器。
+
+- `ShaderMaterial` 将有一些代码自动添加到着色器代码中。
+- `RawShaderMaterial` 将什么都没有。
+
+简单引号内只能包含一行，我们可以使用`back quotes` 也被称为 `backtick`、`acute` 或左括号(模板文字)。
+
+```js
+const material = new THREE.RawShaderMaterial({
+  vertexShader: ``,
+  fragmentShader: ``,
+});
+```
+
+创建一个简单的 Shader
+
+```js
+const material = new THREE.RawShaderMaterial({
+  vertexShader: `
+    uniform mat4 projectionMatrix;
+    uniform mat4 viewMatrix;
+    uniform mat4 modelMatrix;
+
+    attribute vec3 position;
+
+    void main()
+    {
+      gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(position, 1.0);
+    }
+  `,
+  fragmentShader: `
+    precision mediump float;
+
+    void main()
+    {
+      gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+    }
+  `,
+});
+```
+
+> 在 VSCode 中安装插件 `Shader languages support for VS Code` 以支持代码语法高亮。
+
+> 在 VSCode 中安装插件 `WebGL GLSL Editor` 以支持代码格式化。
+
+将 Shader 分离成多个文件将处理以下三种情况。
+
+- 我们希望分离较大的 Shaders
+- 我们希望重用 shader 代码块。
+- 我们希望使用其他开发人员制作的外部着色器块。
+
+安装 Vite 插件支持 glsl
+
+```bash
+npm install vite-plugin-glsl
+```
+
+### GLSL
+
+着色器语言称为 GLSL (openGL Shading Language)
+接近 C 语言
+
+#### 日志(Logging)
+
+glsl 中没有`console`所以无法打印日志。
+
+#### 缩进(Indentation)
+
+#### 分号(Semicolon)
+
+分号很重要，不加分号将会报错
+
+#### 变量
+
+```glsl
+flaot a = 1.0;
+float b = 2.0;
+float c = a / b;
+float d = -1.123;
+```
+
+整型
+
+```glsl
+int foo = 123;
+int bar  = -1;
+int c = foo * bar;
+```
+
+类型转换
+
+```glsl
+float a = 1.0;
+int b = 2;
+int c = a * float(b);
+```
+
+布尔
+
+```glsl
+bool foo = true;
+bool bar = false;
+```
+
+二维向量
+
+```glsl
+// vec2(x, y)
+vec2 foo = vec2(1.0, 2.0);
+
+foo.x = 1.1;
+foo.y = 2.2;
+
+foo *= 2.0;
+```
+
+三维向量
+
+```glsl
+vec3 foo = vec3(0.0);
+vec3 bar = vec3(1.0, 2.0, 3.0);
+
+bar.z = 4.0;
+bar.y = 3.0;
+bar.x = 2.0;
+
+```
+
+三维向量颜色
+
+```glsl
+vec3 purpoleColor = vec(0.0);
+purpleColor.r = 0.5;
+purpleColor.b = 1.0;
+```
+
+基于二维向量创建三维向量
+
+```glsl
+vec2 foo = vec2(1.0, 2.0);
+vec3 bar = vec3(vec2, 3.0);
+```
+
+基于三维向量创建二维向量
+
+```glsl
+vec3 foo = vec3(1.0, 2.0, 3.0);
+vec2 bar = foo.xy;
+```
+
+> 称为 Swizzle，顺序可以不同 `foo.xy`、`foo.yx`、`foo.xz`、`foo.yz`
+
+四维向量
+
+```glsl
+// vec4(x, y, z, w)
+// vec4(r, g, b, a)
+vec4 foo = vec4(1.0, 2.0, 3.0, 4.0);
+
+float bar = foo.w;
+```
+
+#### 函数
+
+```glsl
+flaot addition()
+{
+  flaot a = 1.0;
+  float b = 2.0;
+
+  return a + b;
+}
+
+float result = addtion();
+```
+
+无返回值函数
+
+```glsl
+void addition()
+{
+  flaot a = 1.0;
+  float b = 2.0;
+}
+```
+
+带参数带返回值函数
+
+```glsl
+float addition (float a, float b)
+{
+  return a + b;
+}
+```
+
+#### 原生函数(Native Function)
+
+有许多内置函数例如 `sin`、`cos`、`min`、`pow`、`exp`、`mod`、`clamp` 等。
+
+而且还有非常实用的功能，比如 `cross`、`dot`、`mix`、`step`、`smoothstep`、`length`、`distance`、`reflect`、`refract`、`normalize` 等。
+
+#### 文档
+
+没有初学者友好的文档
+
+- `Shaderific` - 制作 shader 的 ios 应用程序文档。
+- `Kronos Group registery` - OpenGL 文档但非常接近 WebGL。
+- `Book of Shaders glossary` - 一个关于`fragment shader`的较好课程。
+
+### 理解 Vetex Shader
+
+#### 主函数
+
+自动调用主函数，不返回任何值。
+
+```glsl
+void main()
+{
+
+}
+```
+
+#### gl_Position
+
+- 已经存在且无需分配。
+- 将包含顶点在屏幕上的位置。
+
+`projectionMatrix * viewMatrix * modelMatrix * vec4(position, 1.0)`，这个长指令将返回一个 vec4。
+
+可以修改`gl_Position` 的 `x`、`y`的值。
+
+```glsl
+void main() {
+    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(position, 1.0);
+
+    gl_Position.x += 0.5;
+    gl_Position.y += 0.5;
+}
+```
+
+#### 位置属性(Position Attribute)
+
+```glsl
+attribute vec3 position;
+```
+
+- 为我们提供了位置属性
+- 每个顶点之间的不同
+- 包含属性的 x、y 和 z 坐标
+
+#### Matrices Uniforms
+
+每个矩阵将变换位置，直到我们得到最终的剪辑空间坐标。
+
+- 三个矩阵
+- 统一的，因为它们对所有顶点都是一样的。
+- 每个矩阵都会做一部分转换。
+- 为了应用一个矩阵，我们将它相乘。
+- 矩阵必须具有与坐标相同的大小(vec4 的 mat4)。
+- `modelMatrix` 应用相对于网格的变换 (position、rotation、scale)。
+- `viewMatrix` 应用转换相对于相机(position、rotation、field of view、near、far)。
+- `projectionMatrix` 将坐标转换为剪辑空间坐标。
+
+我们还有一个更短的版本，是将`viewMatrix`和`modelMatrix`合并为一个`modelViewMatrix`。
+
+### 理解 Fragment Shader
+
+#### 主函数
+
+和 `vertex shader` 一样也是自动调用不返回任何值。
+
+```glsl
+void main()
+{
+
+}
+```
+
+#### Precision
+
+```glsl
+precision mediump float;
+```
+
+决定浮点数的精度
+
+- `highp` - 高精度可能会有性能下降，可能无法在某些设备上正常工作。
+- `lowp` - 低精度会因为缺乏精度而产生 bug。
+- `mediump` - 中精度在大多数设备上都能正常工作，所以通常使用`mediump`。
+
+#### gl_FragColor
+
+- 已存在且我们需要分配。
+- 它将包含 fragment 的颜色。
+- vec4(r, g, b, a)。
+
+激活透明度需要将 `RawShaderMaterial` 中的 `transparent` 属性设置为 `true`。
+
+#### 属性(Attributes)
+
+#### Uniform
+
+- 具有相同的着色器但具有不同的结果。
+- 能够调整值。
+- 设置值的动画效果。
+
+#### 纹理(Texture)
+
+#### ShaderMatrial
+
+ShaderMaterial 是相同的，但在着色器代码中预先建立了`uniforms`、`attributes`和`precision`。
+
+```glsl
+uniform mat4 projectionMatrix;
+uniform mat4 viewMatrix;
+uniform mat4 modelMatrix;
+attribute vec3 position;
+attribute vec2 uv;
+precision mediump float;
+```
+
+### 调试
+
