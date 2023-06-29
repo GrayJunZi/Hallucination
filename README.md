@@ -1995,3 +1995,1110 @@ precision mediump float;
 
 ### 调试
 
+## 二十八、着色器模式(Shader Patterns)
+
+通常我们需要画一些特定的图案，比如星星、圆圈、光透镜、波等等。它可以是看到那些模式或移动顶点。
+
+我们可以使用纹理，但绘制形状给我们更多的控制我们只有坐标和数学技能。
+
+我们将画许多图案，从非常简单的渐变到非常复杂的柏林构图(perlin compositions)
+
+### 发送 UV 坐标到片段(Send The UV Coordinates to the Fragment)
+
+### Pattern 1
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    gl_FragColor = vec4(vUV, 1.0, 1.0);
+}
+```
+
+### Pattern 2
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    gl_FragColor = vec4(vUV, 0.0, 1.0);
+}
+```
+
+以及
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    gl_FragColor = vec4(vUV, 0.5, 1.0);
+}
+```
+
+### Pattern 3
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    gl_FragColor = vec4(vUV.x, vUV.x, vUV.x, 1.0);
+}
+```
+
+### Pattern 4
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    float strength = vUV.y;
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 5
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    float strength = 1.0 - vUV.y;
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 6
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    float strength = vUV.y * 10.0;
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 7
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    float strength = mod(vUV.y * 10.0, 1.0);
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 8
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    float strength = mod(vUV.y * 10.0, 1.0);
+
+    strength = step(0.5, strength);
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 9
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    float strength = mod(vUV.y * 10.0, 1.0);
+
+    strength = step(0.8, strength);
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 10
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    float strength = mod(vUV.x * 10.0, 1.0);
+
+    strength = step(0.8, strength);
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 11
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    float strength = step(0.8, mod(vUV.x * 10.0, 1.0));
+
+    strength += step(0.8, mod(vUV.y * 10.0, 1.0));
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 12
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    float strength = step(0.8, mod(vUV.x * 10.0, 1.0));
+
+    strength *= step(0.8, mod(vUV.y * 10.0, 1.0));
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 13
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    float strength = step(0.4, mod(vUV.x * 10.0, 1.0));
+
+    strength *= step(0.8, mod(vUV.y * 10.0, 1.0));
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 14
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    float barX = step(0.4, mod(vUV.x * 10.0, 1.0));
+    barX *= step(0.8, mod(vUV.y * 10.0, 1.0));
+
+    float barY = step(0.8, mod(vUV.x * 10.0, 1.0));
+    barY *= step(0.4, mod(vUV.y * 10.0, 1.0));
+
+    float strength = barX + barY;
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 15
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    float barX = step(0.4, mod(vUV.x * 10.0, 1.0));
+    barX *= step(0.8, mod(vUV.y * 10.0 + 0.2, 1.0));
+
+    float barY = step(0.8, mod(vUV.x * 10.0 + 0.2, 1.0));
+    barY *= step(0.4, mod(vUV.y * 10.0, 1.0));
+
+    float strength = barX + barY;
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 16
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    float strength = abs(vUV.x - 0.5);
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 17
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    float strength = min(abs(vUV.x - 0.5), abs(vUV.y - 0.5));
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 18
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    float strength = max(abs(vUV.x - 0.5), abs(vUV.y - 0.5));
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 19
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    float strength = step(0.2, max(abs(vUV.x - 0.5), abs(vUV.y - 0.5)));
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 20
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    float square1 = step(0.2, max(abs(vUV.x - 0.5), abs(vUV.y - 0.5)));
+    float square2 = 1.0 - step(0.25, max(abs(vUV.x - 0.5), abs(vUV.y - 0.5)));
+    float strength = square1 * square2;
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 21
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    float strength = floor(vUV.x * 10.0) / 10.0;
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 22
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    float strength = floor(vUV.x * 10.0) / 10.0;
+    strength *= floor(vUV.y * 10.0) / 10.0;
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 23
+
+```glsl
+varying vec2 vUV;
+
+float random(vec2 st) {
+    return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
+}
+
+void main() {
+    float strength = random(vUV);
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 24
+
+```glsl
+varying vec2 vUV;
+
+float random(vec2 st) {
+    return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
+}
+
+void main() {
+    vec2 gridUV = vec2(floor(vUV.x * 10.0) / 10.0, floor(vUV.y * 10.0) / 10.0);
+    float strength = random(gridUV);
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 25
+
+```glsl
+varying vec2 vUV;
+
+float random(vec2 st) {
+    return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
+}
+
+void main() {
+    vec2 gridUV = vec2(floor(vUV.x * 10.0) / 10.0, floor(vUV.y * 10.0 + vUV.x * 5.0) / 10.0);
+    float strength = random(gridUV);
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 26
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    float strength = length(vUV);
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 27
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    float strength = distance(vUV, vec2(0.5));
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 28
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    float strength = 1.0 - distance(vUV, vec2(0.5));
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 29
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    float strength = 0.015 / distance(vUV, vec2(0.5));
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 30
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    vec2 lightUV = vec2(vUV.x * 0.1 + 0.45, vUV.y * 0.5 + 0.25);
+    float strength = 0.015 / distance(lightUV, vec2(0.5));
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 31
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    vec2 lightUVX = vec2(vUV.x * 0.1 + 0.45, vUV.y * 0.5 + 0.25);
+    float lightX = 0.015 / distance(lightUVX, vec2(0.5));
+
+    vec2 lightUVY = vec2(vUV.y * 0.1 + 0.45, vUV.x * 0.5 + 0.25);
+    float lightY = 0.015 / distance(lightUVY, vec2(0.5));
+
+    float strength = lightX * lightY;
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 32
+
+```glsl
+#define PI 3.1415926535897932384626433832795
+
+varying vec2 vUV;
+
+vec2 rotate(vec2 uv, float rotation, vec2 mid) {
+    return vec2(cos(rotation) * (uv.x - mid.x) + sin(rotation) * (uv.y - mid.y) + mid.x, cos(rotation) * (uv.y - mid.y) - sin(rotation) * (uv.x - mid.x) + mid.y);
+}
+
+void main() {
+    vec2 rotateUV = rotate(vUV, PI * 0.25, vec2(0.5));
+
+    vec2 lightUVX = vec2(rotateUV.x * 0.1 + 0.45, rotateUV.y * 0.5 + 0.25);
+    float lightX = 0.015 / distance(lightUVX, vec2(0.5));
+
+    vec2 lightUVY = vec2(rotateUV.y * 0.1 + 0.45, rotateUV.x * 0.5 + 0.25);
+    float lightY = 0.015 / distance(lightUVY, vec2(0.5));
+
+    float strength = lightX * lightY;
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 33
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    float strength = step(0.2, distance(vUV, vec2(0.5)));
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 34
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    float strength = abs(distance(vUV, vec2(0.5)) - 0.25);
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 35
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    float strength = step(0.01, abs(distance(vUV, vec2(0.5)) - 0.25));
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 36
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    float strength = 1.0 - step(0.01, abs(distance(vUV, vec2(0.5)) - 0.25));
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 37
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    vec2 wavedUV = vec2(vUV.x, vUV.y + sin(vUV.x * 30.0) * 0.1);
+    float strength = 1.0 - step(0.01, abs(distance(wavedUV, vec2(0.5)) - 0.25));
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 38
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    vec2 wavedUV = vec2(vUV.x + sin(vUV.y * 30.0) * 0.1, vUV.y + sin(vUV.x * 30.0) * 0.1);
+    float strength = 1.0 - step(0.01, abs(distance(wavedUV, vec2(0.5)) - 0.25));
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 39
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    vec2 wavedUV = vec2(vUV.x + sin(vUV.y * 100.0) * 0.1, vUV.y + sin(vUV.x * 100.0) * 0.1);
+    float strength = 1.0 - step(0.01, abs(distance(wavedUV, vec2(0.5)) - 0.25));
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 40
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    float angle = atan(vUV.x, vUV.y);
+    float strength = angle;
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 41
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    float angle = atan(vUV.x - 0.5, vUV.y - 0.5);
+    float strength = angle;
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 42
+
+```glsl
+#define PI 3.1415926535897932384626433832795
+
+varying vec2 vUV;
+
+void main() {
+    float angle = atan(vUV.x - 0.5, vUV.y - 0.5);
+    angle /= PI * 2.0;
+    angle += 0.5;
+    float strength = angle;
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 43
+
+```glsl
+#define PI 3.1415926535897932384626433832795
+
+varying vec2 vUV;
+
+void main() {
+    float angle = atan(vUV.x - 0.5, vUV.y - 0.5);
+    angle /= PI * 2.0;
+    angle += 0.5;
+    angle *= 20.0;
+    angle = mod(angle, 1.0);
+    float strength = angle;
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 44
+
+```glsl
+#define PI 3.1415926535897932384626433832795
+
+varying vec2 vUV;
+
+void main() {
+    float angle = atan(vUV.x - 0.5, vUV.y - 0.5);
+    angle /= PI * 2.0;
+    angle += 0.5;
+    float strength = sin(angle * 100.0);
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 45
+
+```glsl
+#define PI 3.1415926535897932384626433832795
+
+varying vec2 vUV;
+
+void main() {
+    float angle = atan(vUV.x - 0.5, vUV.y - 0.5);
+    angle /= PI * 2.0;
+    angle += 0.5;
+    float sinusoid = sin(angle * 100.0);
+
+    float radius = 0.25 + sinusoid;
+    float strength = 1.0 - step(0.01, abs(distance(vUV, vec2(0.5)) - radius));
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+```glsl
+#define PI 3.1415926535897932384626433832795
+
+varying vec2 vUV;
+
+void main() {
+    float angle = atan(vUV.x - 0.5, vUV.y - 0.5);
+    angle /= PI * 2.0;
+    angle += 0.5;
+    float sinusoid = sin(angle * 100.0);
+
+    float radius = 0.25 + sinusoid * 0.02;
+    float strength = 1.0 - step(0.01, abs(distance(vUV, vec2(0.5)) - radius));
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 46
+
+[Classic Perlin Noise](https://github.com/stegu/webgl-noise/blob/master/src/classicnoise2D.glsl)
+
+```glsl
+varying vec2 vUV;
+
+//
+// GLSL textureless classic 2D noise "cnoise",
+// with an RSL-style periodic variant "pnoise".
+// Author:  Stefan Gustavson (stefan.gustavson@liu.se)
+// Version: 2011-08-22
+//
+// Many thanks to Ian McEwan of Ashima Arts for the
+// ideas for permutation and gradient selection.
+//
+// Copyright (c) 2011 Stefan Gustavson. All rights reserved.
+// Distributed under the MIT license. See LICENSE file.
+// https://github.com/stegu/webgl-noise
+//
+
+vec4 mod289(vec4 x)
+{
+  return x - floor(x * (1.0 / 289.0)) * 289.0;
+}
+
+vec4 permute(vec4 x)
+{
+  return mod289(((x*34.0)+10.0)*x);
+}
+
+vec4 taylorInvSqrt(vec4 r)
+{
+  return 1.79284291400159 - 0.85373472095314 * r;
+}
+
+vec2 fade(vec2 t) {
+  return t*t*t*(t*(t*6.0-15.0)+10.0);
+}
+
+// Classic Perlin noise
+float cnoise(vec2 P)
+{
+  vec4 Pi = floor(P.xyxy) + vec4(0.0, 0.0, 1.0, 1.0);
+  vec4 Pf = fract(P.xyxy) - vec4(0.0, 0.0, 1.0, 1.0);
+  Pi = mod289(Pi); // To avoid truncation effects in permutation
+  vec4 ix = Pi.xzxz;
+  vec4 iy = Pi.yyww;
+  vec4 fx = Pf.xzxz;
+  vec4 fy = Pf.yyww;
+
+  vec4 i = permute(permute(ix) + iy);
+
+  vec4 gx = fract(i * (1.0 / 41.0)) * 2.0 - 1.0 ;
+  vec4 gy = abs(gx) - 0.5 ;
+  vec4 tx = floor(gx + 0.5);
+  gx = gx - tx;
+
+  vec2 g00 = vec2(gx.x,gy.x);
+  vec2 g10 = vec2(gx.y,gy.y);
+  vec2 g01 = vec2(gx.z,gy.z);
+  vec2 g11 = vec2(gx.w,gy.w);
+
+  vec4 norm = taylorInvSqrt(vec4(dot(g00, g00), dot(g01, g01), dot(g10, g10), dot(g11, g11)));
+  g00 *= norm.x;
+  g01 *= norm.y;
+  g10 *= norm.z;
+  g11 *= norm.w;
+
+  float n00 = dot(g00, vec2(fx.x, fy.x));
+  float n10 = dot(g10, vec2(fx.y, fy.y));
+  float n01 = dot(g01, vec2(fx.z, fy.z));
+  float n11 = dot(g11, vec2(fx.w, fy.w));
+
+  vec2 fade_xy = fade(Pf.xy);
+  vec2 n_x = mix(vec2(n00, n01), vec2(n10, n11), fade_xy.x);
+  float n_xy = mix(n_x.x, n_x.y, fade_xy.y);
+  return 2.3 * n_xy;
+}
+
+void main() {
+    float strength = cnoise(vUV * 10.0);
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 47
+
+```glsl
+varying vec2 vUV;
+
+//
+// GLSL textureless classic 2D noise "cnoise",
+// with an RSL-style periodic variant "pnoise".
+// Author:  Stefan Gustavson (stefan.gustavson@liu.se)
+// Version: 2011-08-22
+//
+// Many thanks to Ian McEwan of Ashima Arts for the
+// ideas for permutation and gradient selection.
+//
+// Copyright (c) 2011 Stefan Gustavson. All rights reserved.
+// Distributed under the MIT license. See LICENSE file.
+// https://github.com/stegu/webgl-noise
+//
+
+vec4 mod289(vec4 x) {
+    return x - floor(x * (1.0 / 289.0)) * 289.0;
+}
+
+vec4 permute(vec4 x) {
+    return mod289(((x * 34.0) + 10.0) * x);
+}
+
+vec4 taylorInvSqrt(vec4 r) {
+    return 1.79284291400159 - 0.85373472095314 * r;
+}
+
+vec2 fade(vec2 t) {
+    return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
+}
+
+// Classic Perlin noise
+float cnoise(vec2 P) {
+    vec4 Pi = floor(P.xyxy) + vec4(0.0, 0.0, 1.0, 1.0);
+    vec4 Pf = fract(P.xyxy) - vec4(0.0, 0.0, 1.0, 1.0);
+    Pi = mod289(Pi); // To avoid truncation effects in permutation
+    vec4 ix = Pi.xzxz;
+    vec4 iy = Pi.yyww;
+    vec4 fx = Pf.xzxz;
+    vec4 fy = Pf.yyww;
+
+    vec4 i = permute(permute(ix) + iy);
+
+    vec4 gx = fract(i * (1.0 / 41.0)) * 2.0 - 1.0;
+    vec4 gy = abs(gx) - 0.5;
+    vec4 tx = floor(gx + 0.5);
+    gx = gx - tx;
+
+    vec2 g00 = vec2(gx.x, gy.x);
+    vec2 g10 = vec2(gx.y, gy.y);
+    vec2 g01 = vec2(gx.z, gy.z);
+    vec2 g11 = vec2(gx.w, gy.w);
+
+    vec4 norm = taylorInvSqrt(vec4(dot(g00, g00), dot(g01, g01), dot(g10, g10), dot(g11, g11)));
+    g00 *= norm.x;
+    g01 *= norm.y;
+    g10 *= norm.z;
+    g11 *= norm.w;
+
+    float n00 = dot(g00, vec2(fx.x, fy.x));
+    float n10 = dot(g10, vec2(fx.y, fy.y));
+    float n01 = dot(g01, vec2(fx.z, fy.z));
+    float n11 = dot(g11, vec2(fx.w, fy.w));
+
+    vec2 fade_xy = fade(Pf.xy);
+    vec2 n_x = mix(vec2(n00, n01), vec2(n10, n11), fade_xy.x);
+    float n_xy = mix(n_x.x, n_x.y, fade_xy.y);
+    return 2.3 * n_xy;
+}
+
+void main() {
+    float strength = step(0.0, cnoise(vUV * 10.0) );
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 48
+
+```glsl
+varying vec2 vUV;
+
+//
+// GLSL textureless classic 2D noise "cnoise",
+// with an RSL-style periodic variant "pnoise".
+// Author:  Stefan Gustavson (stefan.gustavson@liu.se)
+// Version: 2011-08-22
+//
+// Many thanks to Ian McEwan of Ashima Arts for the
+// ideas for permutation and gradient selection.
+//
+// Copyright (c) 2011 Stefan Gustavson. All rights reserved.
+// Distributed under the MIT license. See LICENSE file.
+// https://github.com/stegu/webgl-noise
+//
+
+vec4 mod289(vec4 x) {
+    return x - floor(x * (1.0 / 289.0)) * 289.0;
+}
+
+vec4 permute(vec4 x) {
+    return mod289(((x * 34.0) + 10.0) * x);
+}
+
+vec4 taylorInvSqrt(vec4 r) {
+    return 1.79284291400159 - 0.85373472095314 * r;
+}
+
+vec2 fade(vec2 t) {
+    return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
+}
+
+// Classic Perlin noise
+float cnoise(vec2 P) {
+    vec4 Pi = floor(P.xyxy) + vec4(0.0, 0.0, 1.0, 1.0);
+    vec4 Pf = fract(P.xyxy) - vec4(0.0, 0.0, 1.0, 1.0);
+    Pi = mod289(Pi); // To avoid truncation effects in permutation
+    vec4 ix = Pi.xzxz;
+    vec4 iy = Pi.yyww;
+    vec4 fx = Pf.xzxz;
+    vec4 fy = Pf.yyww;
+
+    vec4 i = permute(permute(ix) + iy);
+
+    vec4 gx = fract(i * (1.0 / 41.0)) * 2.0 - 1.0;
+    vec4 gy = abs(gx) - 0.5;
+    vec4 tx = floor(gx + 0.5);
+    gx = gx - tx;
+
+    vec2 g00 = vec2(gx.x, gy.x);
+    vec2 g10 = vec2(gx.y, gy.y);
+    vec2 g01 = vec2(gx.z, gy.z);
+    vec2 g11 = vec2(gx.w, gy.w);
+
+    vec4 norm = taylorInvSqrt(vec4(dot(g00, g00), dot(g01, g01), dot(g10, g10), dot(g11, g11)));
+    g00 *= norm.x;
+    g01 *= norm.y;
+    g10 *= norm.z;
+    g11 *= norm.w;
+
+    float n00 = dot(g00, vec2(fx.x, fy.x));
+    float n10 = dot(g10, vec2(fx.y, fy.y));
+    float n01 = dot(g01, vec2(fx.z, fy.z));
+    float n11 = dot(g11, vec2(fx.w, fy.w));
+
+    vec2 fade_xy = fade(Pf.xy);
+    vec2 n_x = mix(vec2(n00, n01), vec2(n10, n11), fade_xy.x);
+    float n_xy = mix(n_x.x, n_x.y, fade_xy.y);
+    return 2.3 * n_xy;
+}
+
+void main() {
+    float strength = 1.0 - abs(cnoise(vUV * 10.0));
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 49
+
+```glsl
+varying vec2 vUV;
+
+//
+// GLSL textureless classic 2D noise "cnoise",
+// with an RSL-style periodic variant "pnoise".
+// Author:  Stefan Gustavson (stefan.gustavson@liu.se)
+// Version: 2011-08-22
+//
+// Many thanks to Ian McEwan of Ashima Arts for the
+// ideas for permutation and gradient selection.
+//
+// Copyright (c) 2011 Stefan Gustavson. All rights reserved.
+// Distributed under the MIT license. See LICENSE file.
+// https://github.com/stegu/webgl-noise
+//
+
+vec4 mod289(vec4 x) {
+    return x - floor(x * (1.0 / 289.0)) * 289.0;
+}
+
+vec4 permute(vec4 x) {
+    return mod289(((x * 34.0) + 10.0) * x);
+}
+
+vec4 taylorInvSqrt(vec4 r) {
+    return 1.79284291400159 - 0.85373472095314 * r;
+}
+
+vec2 fade(vec2 t) {
+    return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
+}
+
+// Classic Perlin noise
+float cnoise(vec2 P) {
+    vec4 Pi = floor(P.xyxy) + vec4(0.0, 0.0, 1.0, 1.0);
+    vec4 Pf = fract(P.xyxy) - vec4(0.0, 0.0, 1.0, 1.0);
+    Pi = mod289(Pi); // To avoid truncation effects in permutation
+    vec4 ix = Pi.xzxz;
+    vec4 iy = Pi.yyww;
+    vec4 fx = Pf.xzxz;
+    vec4 fy = Pf.yyww;
+
+    vec4 i = permute(permute(ix) + iy);
+
+    vec4 gx = fract(i * (1.0 / 41.0)) * 2.0 - 1.0;
+    vec4 gy = abs(gx) - 0.5;
+    vec4 tx = floor(gx + 0.5);
+    gx = gx - tx;
+
+    vec2 g00 = vec2(gx.x, gy.x);
+    vec2 g10 = vec2(gx.y, gy.y);
+    vec2 g01 = vec2(gx.z, gy.z);
+    vec2 g11 = vec2(gx.w, gy.w);
+
+    vec4 norm = taylorInvSqrt(vec4(dot(g00, g00), dot(g01, g01), dot(g10, g10), dot(g11, g11)));
+    g00 *= norm.x;
+    g01 *= norm.y;
+    g10 *= norm.z;
+    g11 *= norm.w;
+
+    float n00 = dot(g00, vec2(fx.x, fy.x));
+    float n10 = dot(g10, vec2(fx.y, fy.y));
+    float n01 = dot(g01, vec2(fx.z, fy.z));
+    float n11 = dot(g11, vec2(fx.w, fy.w));
+
+    vec2 fade_xy = fade(Pf.xy);
+    vec2 n_x = mix(vec2(n00, n01), vec2(n10, n11), fade_xy.x);
+    float n_xy = mix(n_x.x, n_x.y, fade_xy.y);
+    return 2.3 * n_xy;
+}
+
+void main() {
+    float strength = sin(abs(cnoise(vUV * 10.0)) * 20.0);
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### Pattern 50
+
+```glsl
+varying vec2 vUV;
+
+//
+// GLSL textureless classic 2D noise "cnoise",
+// with an RSL-style periodic variant "pnoise".
+// Author:  Stefan Gustavson (stefan.gustavson@liu.se)
+// Version: 2011-08-22
+//
+// Many thanks to Ian McEwan of Ashima Arts for the
+// ideas for permutation and gradient selection.
+//
+// Copyright (c) 2011 Stefan Gustavson. All rights reserved.
+// Distributed under the MIT license. See LICENSE file.
+// https://github.com/stegu/webgl-noise
+//
+
+vec4 mod289(vec4 x) {
+    return x - floor(x * (1.0 / 289.0)) * 289.0;
+}
+
+vec4 permute(vec4 x) {
+    return mod289(((x * 34.0) + 10.0) * x);
+}
+
+vec4 taylorInvSqrt(vec4 r) {
+    return 1.79284291400159 - 0.85373472095314 * r;
+}
+
+vec2 fade(vec2 t) {
+    return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
+}
+
+// Classic Perlin noise
+float cnoise(vec2 P) {
+    vec4 Pi = floor(P.xyxy) + vec4(0.0, 0.0, 1.0, 1.0);
+    vec4 Pf = fract(P.xyxy) - vec4(0.0, 0.0, 1.0, 1.0);
+    Pi = mod289(Pi); // To avoid truncation effects in permutation
+    vec4 ix = Pi.xzxz;
+    vec4 iy = Pi.yyww;
+    vec4 fx = Pf.xzxz;
+    vec4 fy = Pf.yyww;
+
+    vec4 i = permute(permute(ix) + iy);
+
+    vec4 gx = fract(i * (1.0 / 41.0)) * 2.0 - 1.0;
+    vec4 gy = abs(gx) - 0.5;
+    vec4 tx = floor(gx + 0.5);
+    gx = gx - tx;
+
+    vec2 g00 = vec2(gx.x, gy.x);
+    vec2 g10 = vec2(gx.y, gy.y);
+    vec2 g01 = vec2(gx.z, gy.z);
+    vec2 g11 = vec2(gx.w, gy.w);
+
+    vec4 norm = taylorInvSqrt(vec4(dot(g00, g00), dot(g01, g01), dot(g10, g10), dot(g11, g11)));
+    g00 *= norm.x;
+    g01 *= norm.y;
+    g10 *= norm.z;
+    g11 *= norm.w;
+
+    float n00 = dot(g00, vec2(fx.x, fy.x));
+    float n10 = dot(g10, vec2(fx.y, fy.y));
+    float n01 = dot(g01, vec2(fx.z, fy.z));
+    float n11 = dot(g11, vec2(fx.w, fy.w));
+
+    vec2 fade_xy = fade(Pf.xy);
+    vec2 n_x = mix(vec2(n00, n01), vec2(n10, n11), fade_xy.x);
+    float n_xy = mix(n_x.x, n_x.y, fade_xy.y);
+    return 2.3 * n_xy;
+}
+
+void main() {
+    float strength = step(0.9, sin(abs(cnoise(vUV * 10.0)) * 20.0));
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
+}
+```
+
+### 混合颜色(Mix Colors)
+
+使用 `mix` 函数混合颜色。
+
+```glsl
+void main() {
+    float strength = step(0.9, sin(abs(cnoise(vUV * 10.0)) * 20.0));
+
+    vec3 blackColor = vec3(0.0);
+    vec3 uvColor = vec3(vUV, 1.0);
+    vec3 mixedColor = mix(blackColor, uvColor, strength);
+
+    gl_FragColor = vec4(mixedColor, 1.0);
+}
+```
+
+### 设置强度
+
+使用 `clamp` 函数设置强度。
+
+```glsl
+varying vec2 vUV;
+
+void main() {
+    float strength = step(0.8, mod(vUV.x * 10.0, 1.0));
+
+    strength += step(0.8, mod(vUV.y * 10.0, 1.0));
+
+    strength = clamp(strength, 0.0, 1.0);
+
+    vec3 blackColor = vec3(0.0);
+    vec3 uvColor = vec3(vUV, 1.0);
+    vec3 mixedColor = mix(blackColor, uvColor, strength);
+    gl_FragColor = vec4(mixedColor, 1.0);
+}
+```
