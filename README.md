@@ -3102,3 +3102,12 @@ void main() {
     gl_FragColor = vec4(mixedColor, 1.0);
 }
 ```
+
+## 二十九、海洋(Raging sea)
+
+使用 Shader 创建一个汹涌的大海。
+
+1. 材质使用 `ShaderMaterial`。
+2. 创建 `vertex.glsl` 和 `fragment.glsl` 文件。
+3. 创建波浪。
+4. 控制频率
