@@ -3111,3 +3111,5 @@ void main() {
 2. 创建 `vertex.glsl` 和 `fragment.glsl` 文件。
 3. 创建波浪。
 4. 控制频率
+
+## 三十、银河动画(Animated Galaxy)
