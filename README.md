@@ -3113,3 +3113,21 @@ void main() {
 4. 控制频率
 
 ## 三十、银河动画(Animated Galaxy)
+
+## 三十一、改进材质(Modified Materials)
+
+当我们使用`ShaderMaterial`时，我们必须重新执行所有操作，如果我们对`MeshStandardMaterial`的结果很满意，但是我们想应用一个顶点动画，我们需要一种方法来改进该材质。
+
+有两种方法
+- 通过一个Three.js钩子，我们可以使用着色器并注入代码。
+- 通过重新创建素材，但遵循Three.js代码中的操作。
+
+### Hooking The Material
+
+材质绑定 `onBeforeCompile` 事件。
+
+### Twisting
+
+### 修复阴影
+
+为了处理阴影，Three.js从灯光的角度染阴影贴图当这些呈现发生时，所有的材质都被另一组材质所替代。那种材料不会扭曲
