@@ -3119,8 +3119,9 @@ void main() {
 当我们使用`ShaderMaterial`时，我们必须重新执行所有操作，如果我们对`MeshStandardMaterial`的结果很满意，但是我们想应用一个顶点动画，我们需要一种方法来改进该材质。
 
 有两种方法
-- 通过一个Three.js钩子，我们可以使用着色器并注入代码。
-- 通过重新创建素材，但遵循Three.js代码中的操作。
+
+- 通过一个 Three.js 钩子，我们可以使用着色器并注入代码。
+- 通过重新创建素材，但遵循 Three.js 代码中的操作。
 
 ### Hooking The Material
 
@@ -3130,4 +3131,193 @@ void main() {
 
 ### 修复阴影
 
-为了处理阴影，Three.js从灯光的角度染阴影贴图当这些呈现发生时，所有的材质都被另一组材质所替代。那种材料不会扭曲
+为了处理阴影，Three.js 从灯光的角度染阴影贴图当这些呈现发生时，所有的材质都被另一组材质所替代。那种材料不会扭曲
+
+## 三十二、后处理(Post-processing)
+
+后期处理是在最终图像上添加效果，我们通常在电影制作中使用它，但我们也可以在 WebGL 中使用它，它可以是细微的改善图像或创建巨大的效果。
+
+- Depth of field
+- Bloom
+- God ray
+- Motion blur
+- Glitch effect
+- Outlines
+- Color variations
+- Antialiasing
+- Reflections and refractions
+- Etc.
+
+### 渲染目标
+
+我们不是在画布中渲染，而是在`render target` (或 `buffer`) 中渲染，这就像在纹理中渲染，以备后用。
+
+在`Three.js`中这些效果(effects)称为 `passes`。
+
+### Ping Pong Buffering
+
+### Effect Composer
+
+```js
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+
+const effectComposer = new EffectComposer(renderer);
+effectComposer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+effectComposer.setSize(sizes.width, sizes.height);
+```
+
+### Dot Screen Pass
+
+```js
+import { DotScreenPass } from "three/examples/jsm/postprocessing/DotScreenPass.js";
+
+const dotScreenPass = new DotScreenPass();
+effectComposer.addPass(dotScreenPass);
+```
+
+### Glitch Pass
+
+```js
+import { GlitchPass } from "three/examples/jsm/postprocessing/GlitchPass.js";
+
+const glitchPass = new GlitchPass();
+effectComposer.addPass(glitchPass);
+```
+
+### Shader Pass
+
+```js
+import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
+import { RGBShiftShader } from "three/examples/jsm/shaders/RGBShiftShader.js";
+import { GammaCorrectionShader } from "three/examples/jsm/shaders/GammaCorrectionShader.js";
+
+const rgbShaderPass = new ShaderPass(RGBShiftShader);
+effectComposer.addPass(rgbShaderPass);
+
+const gammaCorrectionPass = new ShaderPass(GammaCorrectionShader);
+effectComposer.addPass(gammaCorrectionPass);
+```
+
+### Resizing
+
+```js
+window.addEventListener("resize", () => {
+  // ...
+
+  // 更新 effect composer
+  effectComposer.setSize(sizes.width, sizes.height);
+  effectComposer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  // ...
+});
+```
+
+### Fixing the Antialias
+
+### Using an Antialias Pass
+
+- FXAA:性能很好，但结果只是"OK”，可能是模糊的。
+- SMAA:通常比 FXAA 更好，但性能更差-不要与 MSAA 混淆。
+- SSAA:最好的质量，但最差的表现。
+- TAA:业绩但成果有限。
+
+### Unreal Bloom Pass
+
+- `strength` - 光有多强。
+- `radius` - 亮度能传播多远。
+- `threshold` - 在什么亮度限制下，物体开始发光。
+
+```js
+import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
+
+// ...
+
+const unrealBloomPass = new UnrealBloomPass();
+effectComposer.addPass(unrealBloomPass);
+
+// ...
+```
+
+### 创建自己的 Pass
+
+```js
+const TintShader = {
+  uniforms: {
+    tDiffuse: { value: null },
+    uTint: { value: null },
+  },
+  vertexShader: `
+    varying vec2 vUV;
+
+    void main() {
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+
+        vUV = uv;
+    }
+  `,
+  fragmentShader: `
+    uniform sampler2D tDiffuse;
+    uniform vec3 uTint;
+
+    varying vec2 vUV;
+
+    void main() {
+        vec4 color = texture2D(tDiffuse, vUV);
+        color.rgb += uTint;
+        gl_FragColor = color;
+    }
+  `,
+};
+
+const tintPass = new ShaderPass(TintShader);
+tintPass.material.uniforms.uTint.value = new THREE.Vector3();
+effectComposer.addPass(tintPass);
+```
+
+### Displacement Pass
+
+```js
+const DisplacementShader = {
+  uniforms: {
+    tDiffuse: { value: null },
+    uTime: { value: null },
+  },
+  vertexShader: `
+      varying vec2 vUV;
+  
+      void main() {
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  
+          vUV = uv;
+      }
+    `,
+  fragmentShader: `
+      uniform sampler2D tDiffuse;
+      uniform float uTime;
+  
+      varying vec2 vUV;
+  
+      void main() {
+          vec2 newUV = vec2(
+            vUV.x, 
+            vUV.y + sin(vUV.x * 10.0 + uTime) * 0.1
+          );
+          vec4 color = texture2D(tDiffuse, newUV);
+
+          gl_FragColor = color;
+      }
+    `,
+};
+
+const displacementPass = new ShaderPass(DisplacementShader);
+displacementPass.material.uniforms.uTime.value = 0;
+effectComposer.addPass(displacementPass);
+```
+
+```js
+const tick = () => {
+  // ...
+  displacementPass.material.uniforms.uTime.value = elapsedTime;
+  // ...
+};
+```
