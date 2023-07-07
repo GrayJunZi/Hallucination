@@ -3321,3 +3321,252 @@ const tick = () => {
   // ...
 };
 ```
+
+## 三十三、提高性能
+
+我们的目标应该是至少每秒 60 帧。
+
+主要有两个方面的限制：
+
+- CPU
+- GPU
+
+### 监测(Monitoring)
+
+我们需要某种方法来监测性能，我们要监测每秒的帧数，我们运行 fps 是多少。
+
+我们可以使用 `stats.js` 来监测 JavaScript FPS。
+
+#### 安装 `stats.js`
+
+```bash
+npm install --save stats.js
+```
+
+导入 `stat.js` 包，并将 fps 控制面板显示到页面中。
+
+```js
+import Stats from "stats.js";
+
+const stats = new Stats();
+stats.showPanel(0);
+document.body.appendChild(stats.dom);
+```
+
+开始监控
+
+```js
+const tick = () => {
+  stats.begin();
+
+  // ...
+
+  stats.end();
+};
+```
+
+#### 关闭浏览器 fps 限制。
+
+unix 系统
+
+```bash
+open -a "Google Chrome" --args --disable-gpu-vsync --disable-frame-rate-limit
+```
+
+windows 系统
+
+```bash
+start chrome --args --disable-gpu-vsync --disable-frame-rate-limit
+```
+
+#### 监测绘制调用(Monitoring Draw Calls)
+
+绘制调用是 GPU 绘制的动作，您的绘制调用越少越好。
+
+我们可以使用 chrome 扩展 `Spector.js`
+
+#### 渲染信息
+
+```js
+console.log(renderer.info);
+```
+
+#### 避免 Three.js 灯光
+
+使用烤灯(Baked lights)或使用便宜的灯 (环境灯 AmbientLight，方向灯 DirectonalLight，地狱灯 HemisphereLight)。
+
+#### 避免添加或移除灯光
+
+添加或移除灯光会对性能不好，因为每次添加或删除一个灯光，材质所支持的灯光不得不重新编译。
+
+#### 阴影
+
+避免使用 Three.js 阴影，使用烘培后的阴影(baked shadows)
+
+#### 优化阴影贴图
+
+确保阴影贴图与场景完美匹配，即尺寸大小与场景相符合。
+
+#### 使用 CastShadow 和 ReceiveShadow
+
+更灵活的使用 CastShadow 与 ReceiveShadow，如不会显示与接收阴影的物体不使用这两个属性，可达到提升性能的效果。
+
+#### Deactivate Shadow Auto Update
+
+停用阴影的的自动更新
+
+#### 纹理
+
+纹理在 GPU 内存中占用大量空间，尤其是 `mipmaps`，当你使用纹理时它就会被发送到 GPU，只有分辨率才重要，尽量减少分辨率到最低限度，同时保持一个体面的结果。
+
+#### keep a power of 2 resolutions
+
+记得得在宽度和第八分辨率上保持两倍的幂。
+
+#### 使用正确的格式
+
+我们可以使用 `jpg` 或 `png`。也可以使用在线工具例如 `TinyPNG` 减少重量。
+
+#### Mutualize Geomertries
+
+#### Merge Geomertries
+
+导入`BufferGeometryUtils.js`
+
+```js
+import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
+```
+
+将图形合并后添加至场景中
+
+```js
+const geometries = [];
+for (let i = 0; i < 50; i++) {
+  const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+
+  geometry.rotateX((Math.random() - 0.5) * Math.PI * 2);
+  geometry.rotateY((Math.random() - 0.5) * Math.PI * 2);
+
+  geometry.translate(
+    (Math.random() - 0.5) * 10,
+    (Math.random() - 0.5) * 10,
+    (Math.random() - 0.5) * 10
+  );
+
+  geometries.push(geometry);
+}
+
+const mergedGeometry = BufferGeometryUtils.mergeBufferGeometries(geometries);
+const material = new THREE.MeshNormalMaterial();
+const mesh = new THREE.Mesh(mergedGeometry, material);
+scene.add(mesh);
+```
+
+#### Mutualize Materials
+
+不要在循环中创建 material 这样会浪费性能，可以公用同一个 material。
+
+#### Mesh
+
+使用 `InstancedMesh` 来进行优化。
+
+```js
+const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+const material = new THREE.MeshNormalMaterial();
+
+const mesh = new THREE.InstancedMesh(geometry, material, 50);
+mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+scene.add(mesh);
+
+for (let i = 0; i < 50; i++) {
+  const position = new THREE.Vector3(
+    (Math.random() - 0.5) * 10,
+    (Math.random() - 0.5) * 10,
+    (Math.random() - 0.5) * 10
+  );
+
+  const quaternion = new THREE.Quaternion();
+  quaternion.setFromEuler(
+    new THREE.Euler(
+      (Math.random() - 0.5) * Math.PI * 2,
+      (Math.random() - 0.5) * Math.PI * 2,
+      0
+    )
+  );
+
+  const matrix = new THREE.Matrix4();
+  matrix.makeRotationFromQuaternion(quaternion);
+  matrix.setPosition(position);
+  mesh.setMatrixAt(i, matrix);
+}
+```
+
+#### Low Poly
+
+多边形越少越好如果需要细节，请使用法线贴图(normal maps)。
+
+#### 压缩
+
+(1)、Draco Compression
+
+如果模型有很多细节和非常复杂的几何形状，请使用`Draco Compression`，缺点是在解压缩几何图形时可能会冻结，而且你还必须加载 Draco 库。
+
+(2)、GZIP
+
+gzip 是一个发生在服务器端的压缩，大部分的服务器都不会 gzip 文件，比如`.glb`、`.gltf`、`.obj`等。
+
+#### 相机
+
+(1)、Field of View
+
+当对象不在视图范围内时，它们将不会被渲染(截体剔除)这看起来像是一个俗气的解决方案，但你可以缩小摄像机的视野。
+
+(2)、Near and Far
+
+像视场一样，可以减少摄像机的远近属性。
+
+(3)、Pixel Ratio
+
+像素比限制在 2 以内。
+
+```js
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+```
+
+(4)、Power Preference
+
+某些设备可能能够在不同的 GPU 或不同的 GPU 使用情况之间切换。
+
+在实例化`WebGLRenderer`时，我们可以通过指定一个`PowerPreference`属性来给出所需功率的提示。
+
+```js
+const renderer = new THREE.WebGLRenderer({
+  canvas: canvas,
+  powerPreference: "high-performance",
+  antialias: true,
+});
+```
+
+(5)、Antialias
+
+默认的`antialias`是`performant`，但比没有`antialias`的性能要差只有当您有可见的别名且没有性能问题时才添加它。
+
+#### 后处理(Post-processing)
+
+(1)、限制Passes
+
+每个后期处理通道将使用与染分辨率(包括像素比率)相同的像素来渲染。
+
+(2)、使用纹理
+
+使用柏林噪声函数很酷，但它会大大影响您的性能。有时候，你最好用纹理来表示噪音
+
+(3)、使用定义
+
+`uniforms`是有益的，因为我们可以调整它们，并在JavaScript中设置值的动画，但它们有性能代价。
+
+如果不应该更改值，则可以使用`defines`
+
+```glsl
+#define uDisplacementStrength 1.5
+```
