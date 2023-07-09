@@ -3322,7 +3322,7 @@ const tick = () => {
 };
 ```
 
-## 三十三、提高性能
+## 三十三、提高性能(Performance tips)
 
 我们的目标应该是至少每秒 60 帧。
 
@@ -3553,7 +3553,7 @@ const renderer = new THREE.WebGLRenderer({
 
 #### 后处理(Post-processing)
 
-(1)、限制Passes
+(1)、限制 Passes
 
 每个后期处理通道将使用与染分辨率(包括像素比率)相同的像素来渲染。
 
@@ -3563,10 +3563,151 @@ const renderer = new THREE.WebGLRenderer({
 
 (3)、使用定义
 
-`uniforms`是有益的，因为我们可以调整它们，并在JavaScript中设置值的动画，但它们有性能代价。
+`uniforms`是有益的，因为我们可以调整它们，并在 JavaScript 中设置值的动画，但它们有性能代价。
 
 如果不应该更改值，则可以使用`defines`
 
 ```glsl
 #define uDisplacementStrength 1.5
 ```
+
+## 三十四、加载进度(Intro and loading progress)
+
+目前，东西一旦准备好就出现了我们将添加一个简单的加载程序，以便在一切准备就绪时，场景出现得很好。
+
+我们将使用 WebGL 和 HTML/CSS 混合的加载器。
+
+### 覆盖(Overlay)
+
+我们想要一个淡出的黑色覆盖层。
+
+- 在 CSS 中设置<canvas>的动画效果。
+- 在 CSS 中为<canvas>上方的<div>设置动画。
+- 在摄像机前设置黑色矩形的动画。
+
+#### 基础平台(Base Plane)
+
+```js
+const overlayGeometry = new THREE.PlaneGeometry(1, 1, 1, 1);
+const overlayMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+const overlay = new THREE.Mesh(overlayGeometry, overlayMaterial);
+scene.add(overlay);
+```
+
+#### 填充渲染
+
+修改 Plane 大小以及顶点位置。
+
+```js
+const overlayGeometry = new THREE.PlaneGeometry(2, 2, 1, 1);
+const overlayMaterial = new THREE.ShaderMaterial({
+  vertexShader: `
+        void main() {
+            gl_Position = vec4(position, 1.0);
+        }
+    `,
+  fragmentShader: `
+        void main() {
+            gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+        }
+    `,
+});
+```
+
+#### 颜色与阿尔法
+
+设置透明度
+
+```js
+const overlayMaterial = new THREE.ShaderMaterial({
+  transparent: true,
+  vertexShader: `
+        void main() {
+            gl_Position = vec4(position, 1.0);
+        }
+    `,
+  fragmentShader: `
+        void main() {
+            gl_FragColor = vec4(0.0, 0.0, 0.0, 0.5);
+        }
+    `,
+});
+```
+
+#### Uniform
+
+添加 Uniform
+
+```js
+const overlayMaterial = new THREE.ShaderMaterial({
+  transparent: true,
+  uniforms: {
+    uAlpha: { value: 0 },
+  },
+  vertexShader: `
+        void main() {
+            gl_Position = vec4(position, 1.0);
+        }
+    `,
+  fragmentShader: `
+        uniform float uAlpha;
+        
+        void main() {
+            gl_FragColor = vec4(0.0, 0.0, 0.0, uAlpha);
+        }
+    `,
+});
+```
+
+#### 加载(Loading)
+
+添加加载管理器
+
+```js
+const loadingManager = new THREE.LoadingManager(
+  () => {
+    console.log("加载完成");
+  },
+  () => {
+    console.log("加载中");
+  }
+);
+```
+
+#### 动画(Animated)
+
+安装 gsap
+
+```bash
+npm install --save gsap
+```
+
+导入 gsap
+
+```js
+import { gsap } from "gsap";
+```
+
+加载完成时将覆盖层透明度设为 0
+
+```js
+const loadingManager = new THREE.LoadingManager(
+  () => {
+    gsap.to(overlayMaterial.uniforms.uAlpha, { duration: 3, value: 0 });
+  },
+  () => {
+    console.log("加载中");
+  }
+);
+```
+
+### 加载条(Loading Bar)
+
+我们将添加一个与加载的资源相匹配的进度条。
+
+
+#### 模拟普通带宽(Simulating a normal Bandwidth)
+
+- 按`F12`打开开发者工具，选择`Network`网络选项卡。
+- 检查是否禁用缓存(Disable cache)。
+- 点击限制下拉框，选择添加自定义配置 `Add custom profile`。
