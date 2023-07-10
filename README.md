@@ -3711,3 +3711,8 @@ const loadingManager = new THREE.LoadingManager(
 - 按`F12`打开开发者工具，选择`Network`网络选项卡。
 - 检查是否禁用缓存(Disable cache)。
 - 点击限制下拉框，选择添加自定义配置 `Add custom profile`。
+
+## 三十五、混合HTML与WebGL(Mixing html and webgl)
+
+我们将把HTML集成到场景中，就像DOM元素是WebGL的一部分一样。
+
