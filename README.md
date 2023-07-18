@@ -3716,3 +3716,27 @@ const loadingManager = new THREE.LoadingManager(
 
 我们将把HTML集成到场景中，就像DOM元素是WebGL的一部分一样。
 
+## 三十六、在Blender创建一个场景(Creating a scene in Blender)
+
+### 烘培(Baking)
+
+使用3D软件时，渲染效果通常比Three.js更好，因为它们使用光线跟踪(Ray Tracing)。
+
+光线跟踪包括在多个方向多次投射多条光线，以模拟间接照明。
+
+这是现实的，但它可能需要很多分钟，甚至几个小时。
+
+### 缺点(Drawbacks)
+
+- 我们必须在3D软件中烘焙所有东西。
+- 我们要加载所有的纹理(Textures)。
+- 灯光不是动态的。
+
+### 过程
+
+- 在3D软件中创建场景。
+- 优化所有对象。
+- UV展开(Unwrap)所有东西。
+- 烘培渲染到纹理中。
+- 导出场景到纹理中。
+- 导入所有东西到Three.js中并应用纹理到Mesh上。
